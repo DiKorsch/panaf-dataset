@@ -1,9 +1,12 @@
 import json
 import mmcv
-import pickle
+
+# import pickle
 from glob import glob
 from tqdm import tqdm
 from torch.utils.data import Dataset
+
+# TODO: Optimise fetching of bboxes (numba, cython?)
 
 
 class PanAfDataset(Dataset):
@@ -105,6 +108,34 @@ class PanAfDataset(Dataset):
                         )
                     frame_no += self.sequence_len
         return
+
+    def get_ape_coords(self, video, ape_id, frame_idx):
+        with open(f"{self.ann_path}/{video}.json", "rb") as handle:
+            ann = json.load(handle)
+        try:
+            for a in ann['annotations']:
+                if(a['frame_id'] == frame_idx):
+                    for d in a['detections']:
+                        if(d['ape_id'] == ape_id):
+                            return d['bbox']
+        except ValueError:
+            print(f"{video} {frame_idx}: couldnt find bbox for ape {ape_id}." 
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        ape_id = sample["ape_id"]
+        frame_idx = sample["start_frame"]
+        name = sample["video"]
+        for video_path in self.data:
+            if(self.get_videoname(video_path) == name):
+                video = mmcv.VideoReader(video_path)
+                break
+
+        spatial_sample = []
+
+        for i in range(1, self.sequence_len + 1):
+            spatial_img = video[frame_idx - i]
+            pass
 
 
 def main():

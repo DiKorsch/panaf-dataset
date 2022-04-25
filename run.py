@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 from torchvision import transforms
 from dataset.base import PanAfDataset
-from dataset.human import PanAfHumanDataset
+from dataset.human import SupervisedPanAf
 
 
 def main():
@@ -14,29 +14,21 @@ def main():
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    dataset = PanAfDataset(
-        data_dir="/home/dl18206/Desktop/phd/data/panaf/acp/videos",
-        ann_dir="/home/dl18206/Desktop/phd/data/panaf/acp/annotations/machine/json/all/long",
-        sequence_len=8,
+    dataset = SupervisedPanAf(
+        data_dir="/home/dl18206/Desktop/phd/data/panaf/obfuscated/videos",
+        ann_dir="/home/dl18206/Desktop/phd/data/panaf/obfuscated/annotations/json_obfuscated",
+        sequence_len=5,
+        sample_itvl=1,
         transform=transform,
-    )
-
-    print("=> Human Dataset")
-
-    dataset = PanAfHumanDataset(
-        data_dir="/home/dl18206/Desktop/phd/data/panaf/acp/videos",
-        ann_dir="/home/dl18206/Desktop/phd/data/panaf/acp/annotations/machine/json/all/long",
-        sequence_len=8,
-        transform=transform,
+        behaviour_threshold=72,
     )
 
     print(dataset.__len__())
 
     dataloader = DataLoader(dataset)
-    inputs = next(iter(dataloader))
+    inputs, behaviour = next(iter(dataloader))
 
-    print(inputs.shape)
-    print(inputs.squeeze(dim=0).shape)
+    print(f"Input {inputs.shape}, Label: {behaviour}")
 
     fig = plt.figure(figsize=plt.figaspect(0.75))
     inputs = inputs.squeeze(dim=0)

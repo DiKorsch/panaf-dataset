@@ -7,14 +7,12 @@ from torch.utils.data import Dataset
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
-# TODO: Remove DataLoader from file
 # TODO: Behaviour threshold
-# TODO: Stride / step (i.e. build sample using interval)
 # TODO: Load dense annotations
 
 
 class PanAfDataset(Dataset):
-    def __init__(self, data_dir, ann_dir, sequence_len, transform):
+    def __init__(self, data_dir, ann_dir, sequence_len, sample_itvl, transform):
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
@@ -23,7 +21,15 @@ class PanAfDataset(Dataset):
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
         # assert len(self.data) == len(self.anns), f"{len(self.data)}, {len(self.anns)}"
 
+        # Number of frames in sequence
         self.sequence_len = sequence_len
+
+        # Number of in-between frames
+        self.sample_itvl = sample_itvl
+
+        # Frames required to build samples
+        self.total_seq_len = sequence_len * sample_itvl
+
         self.transform = transform
 
         self.samples = []
@@ -55,7 +61,7 @@ class PanAfDataset(Dataset):
         return ape
 
     def check_sufficient_apes(self, ann, current_ape, frame_no):
-        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
+        for look_ahead_frame_no in range(frame_no, frame_no + self.total_seq_len):
             ape = self.check_ape_exists(ann, look_ahead_frame_no, current_ape)
             if not ape:
                 return False
@@ -80,6 +86,10 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
+    def check_validity(self):
+        # TODO: put all validity checks here
+        pass
+
     def load_annotation(self, filename):
         with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
             ann = json.load(handle)
@@ -92,7 +102,7 @@ class PanAfDataset(Dataset):
         return len(self.samples)
 
     def initialise_dataset(self):
-        for data in tqdm(self.data[:100], desc="Initialising samples", leave=False):
+        for data in tqdm(self.data[:20], desc="Initialising samples", leave=False):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
@@ -103,11 +113,14 @@ class PanAfDataset(Dataset):
 
             no_of_apes = self.count_apes(ann)
             # TODO: check all apes index from 0...
+
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1
 
                 while frame_no <= len(video):
-                    if (len(video) - frame_no) < self.sequence_len - 1:
+                    if (
+                        len(video) - frame_no
+                    ) < self.total_seq_len - 1:  # TODO: check equality symbol is correct
                         break
 
                     ape = self.check_ape_exists(ann, frame_no, current_ape)
@@ -122,14 +135,6 @@ class PanAfDataset(Dataset):
 
                     if not sufficient_apes:
                         frame_no += 1  # self.sequence_len
-                        continue
-
-                    behaviour_threshold = self.check_behaviour_threshold(
-                        ann, frame_no, current_ape
-                    )
-
-                    if not behaviour_threshold:
-                        frame_no += 1
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:
@@ -155,25 +160,38 @@ class PanAfDataset(Dataset):
         except ValueError:
             print(f"{video} {frame_idx}: couldnt find bbox for ape {ape_id}.")
 
-    def __getitem__(self, index):
-        sample = self.samples[index]
-        ape_id = sample["ape_id"]
-        frame_idx = sample["start_frame"]
-        name = sample["video"]
-        for video_path in self.data:
-            if self.get_videoname(video_path) == name:
-                video = mmcv.VideoReader(video_path)
-                break
+    def build_spatial_sample(self, video, name, ape_id, frame_idx):
 
         spatial_sample = []
 
-        for i in range(0, self.sequence_len):
+        for i in range(0, self.total_seq_len, self.sample_itvl):
             spatial_img = video[frame_idx + i - 1]
-            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx)))
+            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
             cropped_img = spatial_img[coords[1] : coords[3], coords[0] : coords[2]]
             spatial_data = self.transform(cropped_img)
             spatial_sample.append(spatial_data.squeeze_(0))
         spatial_sample = torch.stack(spatial_sample, dim=0)
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
 
+        # Check frames in sample match sequence length
+        assert len(spatial_sample) == self.sequence_len
+
+        return spatial_sample
+
+    def get_video(self, name):
+        try:
+            for video_path in self.data:
+                if self.get_videoname(video_path) == name:
+                    video = mmcv.VideoReader(video_path)
+                    return video
+        except ValueError:
+            print(f"Couldn't find {name}.mp4")
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        ape_id = sample["ape_id"]
+        frame_idx = sample["start_frame"]
+        name = sample["video"]
+        video = self.get_video(name)
+        spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
         return spatial_sample

@@ -61,6 +61,30 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
+    def get_ape_behaviour(self, ann, current_ape, frame_no):
+        for a in ann["annotations"]:
+            if a["frame_id"] == frame_no:
+                for d in a["detections"]:
+                    if d["ape_id"] == current_ape:
+                        return d["behaviour"]
+
+    def check_behaviour_threshold(self, ann, current_ape, frame_no):
+        try:
+            behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
+        except ValueError:
+            print("No behaviour found!")
+
+        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
+            future_behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
+            if future_behaviour != behaviour:
+                return False
+        return True
+
+    def load_annotation(self, filename):
+        with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
+            ann = json.load(handle)
+        return ann
+
     def print_samples(self):
         print(self.samples)
 
@@ -72,8 +96,7 @@ class PanAfDataset(Dataset):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
-            with open(f"{self.ann_path}/{name}.json", "rb") as handle:
-                ann = json.load(handle)
+            ann = self.load_annotation(name)
 
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
@@ -99,6 +122,14 @@ class PanAfDataset(Dataset):
 
                     if not sufficient_apes:
                         frame_no += 1  # self.sequence_len
+                        continue
+
+                    behaviour_threshold = self.check_behaviour_threshold(
+                        ann, frame_no, current_ape
+                    )
+
+                    if not behaviour_threshold:
+                        frame_no += 1
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:

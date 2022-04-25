@@ -98,7 +98,7 @@ class PanAfDataset(Dataset):
                     )
 
                     if not sufficient_apes:
-                        frame_no += self.sequence_len
+                        frame_no += 1  # self.sequence_len
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:

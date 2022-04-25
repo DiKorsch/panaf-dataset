@@ -5,10 +5,12 @@ from glob import glob
 from tqdm import tqdm
 from torch.utils.data import Dataset
 
+# TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
 # TODO: Remove DataLoader from file
 # TODO: Behaviour threshold
 # TODO: Stride / step (i.e. build sample using interval)
+# TODO: Load dense annotations
 
 
 class PanAfDataset(Dataset):

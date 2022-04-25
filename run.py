@@ -17,16 +17,8 @@ def main():
     dataset = PanAfDataset(
         data_dir="/home/dl18206/Desktop/phd/data/panaf/acp/videos",
         ann_dir="/home/dl18206/Desktop/phd/data/panaf/acp/annotations/machine/json/all/long",
-        sequence_len=8,
-        transform=transform,
-    )
-
-    print("=> Human Dataset")
-
-    dataset = PanAfHumanDataset(
-        data_dir="/home/dl18206/Desktop/phd/data/panaf/acp/videos",
-        ann_dir="/home/dl18206/Desktop/phd/data/panaf/acp/annotations/machine/json/all/long",
-        sequence_len=8,
+        sequence_len=5,
+        sample_itvl=24,
         transform=transform,
     )
 

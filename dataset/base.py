@@ -7,14 +7,12 @@ from torch.utils.data import Dataset
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
-# TODO: Remove DataLoader from file
 # TODO: Behaviour threshold
-# TODO: Stride / step (i.e. build sample using interval)
 # TODO: Load dense annotations
 
 
 class PanAfDataset(Dataset):
-    def __init__(self, data_dir, ann_dir, sequence_len, transform):
+    def __init__(self, data_dir, ann_dir, sequence_len, sample_itvl, transform):
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
@@ -23,7 +21,15 @@ class PanAfDataset(Dataset):
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
         # assert len(self.data) == len(self.anns), f"{len(self.data)}, {len(self.anns)}"
 
+        # Number of frames in sequence
         self.sequence_len = sequence_len
+
+        # Number of in-between frames
+        self.sample_itvl = sample_itvl
+
+        # Frames required to build samples
+        self.total_seq_len = sequence_len * sample_itvl
+
         self.transform = transform
 
         self.samples = []
@@ -55,7 +61,7 @@ class PanAfDataset(Dataset):
         return ape
 
     def check_sufficient_apes(self, ann, current_ape, frame_no):
-        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
+        for look_ahead_frame_no in range(frame_no, frame_no + self.total_seq_len):
             ape = self.check_ape_exists(ann, look_ahead_frame_no, current_ape)
             if not ape:
                 return False
@@ -107,7 +113,9 @@ class PanAfDataset(Dataset):
                 frame_no = 1
 
                 while frame_no <= len(video):
-                    if (len(video) - frame_no) < self.sequence_len - 1:
+                    if (
+                        len(video) - frame_no
+                    ) < self.total_seq_len - 1:  # TODO: check equality symbol is correct
                         break
 
                     ape = self.check_ape_exists(ann, frame_no, current_ape)
@@ -122,14 +130,6 @@ class PanAfDataset(Dataset):
 
                     if not sufficient_apes:
                         frame_no += 1  # self.sequence_len
-                        continue
-
-                    behaviour_threshold = self.check_behaviour_threshold(
-                        ann, frame_no, current_ape
-                    )
-
-                    if not behaviour_threshold:
-                        frame_no += 1
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:
@@ -167,13 +167,15 @@ class PanAfDataset(Dataset):
 
         spatial_sample = []
 
-        for i in range(0, self.sequence_len):
+        for i in range(0, self.total_seq_len, self.sample_itvl):
             spatial_img = video[frame_idx + i - 1]
-            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx)))
+            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
             cropped_img = spatial_img[coords[1] : coords[3], coords[0] : coords[2]]
             spatial_data = self.transform(cropped_img)
             spatial_sample.append(spatial_data.squeeze_(0))
         spatial_sample = torch.stack(spatial_sample, dim=0)
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
+
+        assert len(spatial_sample) == self.sequence_len
 
         return spatial_sample

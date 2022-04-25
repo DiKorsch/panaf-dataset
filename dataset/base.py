@@ -54,6 +54,13 @@ class PanAfDataset(Dataset):
                         ape = True
         return ape
 
+    def check_sufficient_apes(self, ann, current_ape, frame_no):
+        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
+            ape = self.check_ape_exists(ann, look_ahead_frame_no, current_ape)
+            if not ape:
+                return False
+        return True
+
     def print_samples(self):
         print(self.samples)
 
@@ -85,21 +92,12 @@ class PanAfDataset(Dataset):
                     if not ape:
                         frame_no += 1
                         continue
-                    else:
-                        insufficient_apes = False
 
-                    for look_ahead_frame_no in range(
-                        frame_no, frame_no + self.sequence_len
-                    ):
-                        ape = self.check_ape_exists(
-                            ann, look_ahead_frame_no, current_ape
-                        )
+                    sufficient_apes = self.check_sufficient_apes(
+                        ann, current_ape, frame_no
+                    )
 
-                        if not ape:
-                            insufficient_apes = True
-                            break
-
-                    if insufficient_apes:
+                    if not sufficient_apes:
                         frame_no += self.sequence_len
                         continue
 

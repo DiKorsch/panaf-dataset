@@ -86,6 +86,10 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
+    def check_validity(self):
+        # TODO: put all validity checks here
+        pass
+
     def load_annotation(self, filename):
         with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
             ann = json.load(handle)
@@ -98,7 +102,7 @@ class PanAfDataset(Dataset):
         return len(self.samples)
 
     def initialise_dataset(self):
-        for data in tqdm(self.data[:100], desc="Initialising samples", leave=False):
+        for data in tqdm(self.data[:20], desc="Initialising samples", leave=False):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
@@ -109,6 +113,7 @@ class PanAfDataset(Dataset):
 
             no_of_apes = self.count_apes(ann)
             # TODO: check all apes index from 0...
+
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1
 
@@ -155,15 +160,7 @@ class PanAfDataset(Dataset):
         except ValueError:
             print(f"{video} {frame_idx}: couldnt find bbox for ape {ape_id}.")
 
-    def __getitem__(self, index):
-        sample = self.samples[index]
-        ape_id = sample["ape_id"]
-        frame_idx = sample["start_frame"]
-        name = sample["video"]
-        for video_path in self.data:
-            if self.get_videoname(video_path) == name:
-                video = mmcv.VideoReader(video_path)
-                break
+    def build_spatial_sample(self, video, name, ape_id, frame_idx):
 
         spatial_sample = []
 
@@ -176,6 +173,25 @@ class PanAfDataset(Dataset):
         spatial_sample = torch.stack(spatial_sample, dim=0)
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
 
+        # Check frames in sample match sequence length
         assert len(spatial_sample) == self.sequence_len
 
+        return spatial_sample
+
+    def get_video(self, name):
+        try:
+            for video_path in self.data:
+                if self.get_videoname(video_path) == name:
+                    video = mmcv.VideoReader(video_path)
+                    return video
+        except ValueError:
+            print(f"Couldn't find {name}.mp4")
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        ape_id = sample["ape_id"]
+        frame_idx = sample["start_frame"]
+        name = sample["video"]
+        video = self.get_video(name)
+        spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
         return spatial_sample

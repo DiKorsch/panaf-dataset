@@ -54,7 +54,7 @@ class SupervisedPanAf(PanAfDataset):
                 while frame_no <= len(video):
                     if (
                         len(video) - frame_no
-                    ) < self.total_seq_len - 1:  # TODO: check equality symbol is correct
+                    ) < self.total_seq_len:  # TODO: check equality symbol is correct
                         break
 
                     ape = self.check_ape_exists(ann, frame_no, current_ape)

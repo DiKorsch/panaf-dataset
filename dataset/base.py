@@ -7,7 +7,6 @@ from torch.utils.data import Dataset
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
-# TODO: Behaviour threshold
 # TODO: Load dense annotations
 
 
@@ -120,7 +119,7 @@ class PanAfDataset(Dataset):
                 while frame_no <= len(video):
                     if (
                         len(video) - frame_no
-                    ) < self.total_seq_len - 1:  # TODO: check equality symbol is correct
+                    ) < self.total_seq_len:  # TODO: check equality symbol is correct
                         break
 
                     ape = self.check_ape_exists(ann, frame_no, current_ape)

@@ -4,6 +4,7 @@ import torch
 from glob import glob
 from tqdm import tqdm
 from torch.utils.data import Dataset
+from typing import Callable, Optional
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
@@ -11,13 +12,22 @@ from torch.utils.data import Dataset
 
 
 class PanAfDataset(Dataset):
-    def __init__(self, data_dir, ann_dir, sequence_len, sample_itvl, transform):
+    def __init__(
+        self,
+        data_dir: str = ".",
+        ann_dir: str = ".",
+        sequence_len: int = 5,
+        sample_itvl: int = 1,
+        stride: int = None,
+        transform: Optional[Callable] = None,
+    ):
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
         self.ann_path = ann_dir
         self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
+        #
         # assert len(self.data) == len(self.anns), f"{len(self.data)}, {len(self.anns)}"
 
         # Number of frames in sequence
@@ -28,6 +38,13 @@ class PanAfDataset(Dataset):
 
         # Frames required to build samples
         self.total_seq_len = sequence_len * sample_itvl
+
+        # Frames between samples
+        if stride is None:
+            # This leaves no overlap between samples
+            self.stride = self.total_seq_len
+        else:
+            self.stride = stride
 
         self.transform = transform
 
@@ -144,7 +161,7 @@ class PanAfDataset(Dataset):
                                 "start_frame": frame_no,
                             }
                         )
-                    frame_no += self.sequence_len
+                    frame_no += self.stride
         return
 
     def get_ape_coords(self, video, ape_id, frame_idx):

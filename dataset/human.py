@@ -47,8 +47,8 @@ class SupervisedPanAf(PanAfDataset):
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
 
-            no_of_apes = self.count_apes(ann)
-            # TODO: check all apes index from 0...
+            no_of_apes, ids = self.count_apes(ann)
+            assert self.verify_ape_ids(no_of_apes, ids)
 
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1

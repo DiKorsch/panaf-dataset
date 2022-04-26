@@ -49,6 +49,7 @@ class PanAfDataset(Dataset):
         self.transform = transform
 
         self.samples = []
+        self.apes_per_video = {}
         self.initialise_dataset()
 
     def get_videoname(self, path):
@@ -64,7 +65,7 @@ class PanAfDataset(Dataset):
         if not ids:
             return False
 
-        return max(ids)
+        return max(ids), list(set(ids))
 
     def check_ape_exists(self, ann, frame_no, current_ape):
         ape = False
@@ -114,6 +115,12 @@ class PanAfDataset(Dataset):
     def print_samples(self):
         print(self.samples)
 
+    def verify_ape_ids(self, no_of_apes, ids):
+        for i in range(0, no_of_apes + 1):
+            if(i not in ids):
+                return False
+        return True
+
     def __len__(self):
         return len(self.samples)
 
@@ -127,8 +134,8 @@ class PanAfDataset(Dataset):
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
 
-            no_of_apes = self.count_apes(ann)
-            # TODO: check all apes index from 0...
+            no_of_apes, ids = self.count_apes(ann)
+            assert self.verify_ape_ids(no_of_apes, ids)
 
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1

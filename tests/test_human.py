@@ -21,9 +21,6 @@ def test_high_threshold():
         behaviour_threshold=100,
     )
 
-    dataloader = DataLoader(dataset)
-    inputs, behaviour = next(iter(dataloader))
-
     assert dataset.__len__() == 0
 
 

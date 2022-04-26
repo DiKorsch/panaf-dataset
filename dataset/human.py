@@ -1,20 +1,24 @@
 import mmcv
 from tqdm import tqdm
 from dataset.base import PanAfDataset
+from typing import Callable, Optional
 
 
 class SupervisedPanAf(PanAfDataset):
     def __init__(
         self,
-        data_dir,
-        ann_dir,
-        sequence_len,
-        sample_itvl,
-        transform,
-        behaviour_threshold,
+        data_dir: str = ".",
+        ann_dir: str = ".",
+        sequence_len: int = 5,
+        sample_itvl: int = 1,
+        stride: int = None,
+        transform: Optional[Callable] = None,
+        behaviour_threshold: int = 72,
     ):
         self.behaviour_threshold = behaviour_threshold
-        super().__init__(data_dir, ann_dir, sequence_len, sample_itvl, transform)
+        super().__init__(
+            data_dir, ann_dir, sequence_len, sample_itvl, stride, transform
+        )
 
     def get_ape_behaviour(self, ann, current_ape, frame_no):
         for a in ann["annotations"]:
@@ -25,9 +29,7 @@ class SupervisedPanAf(PanAfDataset):
         return None
 
     def check_behaviour_threshold(self, ann, current_ape, frame_no, target_behaviour):
-        for look_ahead_frame_no in range(
-            frame_no, frame_no + self.behaviour_threshold
-        ):  # TODO: need to pass this as param
+        for look_ahead_frame_no in range(frame_no, frame_no + self.behaviour_threshold):
             future_behaviour = self.get_ape_behaviour(
                 ann, current_ape, look_ahead_frame_no
             )
@@ -90,7 +92,7 @@ class SupervisedPanAf(PanAfDataset):
                                 "start_frame": frame_no,
                             }
                         )
-                    frame_no += self.total_seq_len
+                    frame_no += self.stride
         return
 
     def __getitem__(self, index):

@@ -1,7 +1,7 @@
 """
 Summary: base class tests.
-Tests on sample containing 1 gorilla displaying 'walking'
-behaviour for 86 consecutive frames (frames 1 - 86).
+Tests on sample containing 1 gorilla present for
+86 consecutive frames (frames 1 - 86).
 """
 
 from torch.utils.data import DataLoader
@@ -9,139 +9,100 @@ from torchvision import transforms
 from dataset import PanAfDataset
 
 
-def test_small_sequence():
-    """ Test 5-frame sequence. """
+class TestSingleApe:
+
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
+    data_dir = "data/single/videos"
+    ann_dir = "data/single/annotations"
 
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=5,
-        sample_itvl=1,
-        stride=5,
-        transform=transform,
-    )
+    def test_small_sequence(self):
+        """Test 5-frame sequence."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=5,
+            transform=self.transform,
+        )
 
-    dataloader = DataLoader(dataset)
-    sequence = next(iter(dataloader))
-    assert dataset.__len__() == 17
-    assert len(sequence.squeeze(dim=0)) == 5
+        dataloader = DataLoader(dataset)
+        sequence = next(iter(dataloader))
+        assert dataset.__len__() == 17
+        assert len(sequence.squeeze(dim=0)) == 5
 
+    def test_mid_sequence(self):
+        """Test 10-frame sequence."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=10,
+            sample_itvl=1,
+            transform=self.transform,
+        )
 
-def test_mid_sequence():
-    """ Test 10-frame sequence. """
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
+        dataloader = DataLoader(dataset)
+        sequence = next(iter(dataloader))
+        assert dataset.__len__() == 8
+        assert len(sequence.squeeze(dim=0)) == 10
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
+    def test_mid_with_stride(self):
+        """Test 10-frame sequence w/ stride 20."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=10,
+            sample_itvl=1,
+            stride=20,
+            transform=self.transform,
+        )
 
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=10,
-        sample_itvl=1,
-        transform=transform,
-    )
+        dataloader = DataLoader(dataset)
+        sequence = next(iter(dataloader))
+        assert dataset.__len__() == 4
+        assert len(sequence.squeeze(dim=0)) == 10
 
-    dataloader = DataLoader(dataset)
-    sequence = next(iter(dataloader))
-    assert dataset.__len__() == 8
-    assert len(sequence.squeeze(dim=0)) == 10
+    def test_mid_with_interval(self):
+        """Test 10-frame sequence w/ itvl 2."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=2,
+            stride=10,
+            transform=self.transform,
+        )
 
+        dataloader = DataLoader(dataset)
+        sequence = next(iter(dataloader))
+        assert dataset.__len__() == 8
+        assert len(sequence.squeeze(dim=0)) == 5
 
-def test_mid_with_stride():
-    """ Test 10-frame sequence w/ stride 20. """
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
+    def test_large_seqence(self):
+        """Test sequence of 86-frames (i.e. match total frames)."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=86,
+            sample_itvl=1,
+            transform=self.transform,
+        )
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
+        dataloader = DataLoader(dataset)
+        sequence = next(iter(dataloader))
+        assert dataset.__len__() == 1
+        assert len(sequence.squeeze(dim=0)) == 86
 
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=10,
-        sample_itvl=1,
-        stride=20,
-        transform=transform,
-    )
-
-    dataloader = DataLoader(dataset)
-    sequence = next(iter(dataloader))
-    assert dataset.__len__() == 4
-    assert len(sequence.squeeze(dim=0)) == 10
-
-
-def test_mid_with_interval():
-    """ Test 10-frame sequence w/ itvl 2. """
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
-
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=5,
-        sample_itvl=2,
-        stride=10,
-        transform=transform,
-    )
-
-    dataloader = DataLoader(dataset)
-    sequence = next(iter(dataloader))
-    assert dataset.__len__() == 8
-    assert len(sequence.squeeze(dim=0)) == 5
-
-
-def test_large_seqence():
-    """ Test sequence of 86-frames (i.e. match total frames)."""
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
-
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=86,
-        sample_itvl=1,
-        transform=transform,
-    )
-
-    dataloader = DataLoader(dataset)
-    sequence = next(iter(dataloader))
-    assert dataset.__len__() == 1
-    assert len(sequence.squeeze(dim=0)) == 86
-
-
-def test_above_thresh_seqence():
-    """ Test sequence 87-frames (i.e. greater than total frames). """
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
-
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=87,
-        sample_itvl=1,
-        transform=transform,
-    )
-
-    assert dataset.__len__() == 0
+    def test_above_thresh_seqence(self):
+        """Test sequence 87-frames (i.e. greater than total frames)."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=87,
+            sample_itvl=1,
+            transform=self.transform,
+        )
+        assert dataset.__len__() == 0

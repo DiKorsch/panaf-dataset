@@ -1,104 +1,70 @@
-from torch.utils.data import DataLoader
+"""
+Summary: human class tests.
+Tests on sample containing 1 gorilla displaying 'walking'
+behaviour for 86 consecutive frames (frames 1 - 86).
+"""
+
 from torchvision import transforms
-from dataset import PanAfDataset
 from dataset import SupervisedPanAf
 
 
-def test_high_threshold():
+class TestSingleApe:
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
+    data_dir = "data/single/videos"
+    ann_dir = "data/single/annotations"
 
-    dataset = SupervisedPanAf(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=5,
-        sample_itvl=1,
-        transform=transform,
-        behaviour_threshold=100,
-    )
+    def test_low_threshold(self):
+        """Test 5-frame sequence with 5-frame behaviour thresh."""
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+            behaviour_threshold=5,
+        )
 
-    assert dataset.__len__() == 0
+        # 86 / 5 == 17.2 (i.e., 17 5-frame samples)
+        assert dataset.__len__() == 17
 
+    def test_mid_threshold(self):
 
-def test_mid_threshold():
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+            behaviour_threshold=72,
+        )
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
+        assert dataset.__len__() == 3
 
-    dataset = SupervisedPanAf(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=5,
-        sample_itvl=1,
-        transform=transform,
-        behaviour_threshold=70,
-    )
+    def test_mid_threshold_w_stride(self):
 
-    assert dataset.__len__() == 4
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=24,
+            transform=self.transform,
+            behaviour_threshold=72,
+        )
 
+        assert dataset.__len__() == 1
 
-def test_low_threshold():
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
+    def test_high_threshold(self):
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+            behaviour_threshold=100,
+        )
 
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = SupervisedPanAf(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=5,
-        sample_itvl=1,
-        transform=transform,
-        behaviour_threshold=5,
-    )
-
-    assert dataset.__len__() == 17
-
-
-def test_supervised():
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
-
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = SupervisedPanAf(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=10,
-        sample_itvl=1,
-        transform=transform,
-        behaviour_threshold=100,
-    )
-
-    assert dataset.__len__() == 0
-
-
-class Test:
-    transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Resize((244, 244))]
-    )
-
-    data_dir = "data/videos"
-    ann_dir = "data/annotations"
-
-    dataset = PanAfDataset(
-        data_dir=data_dir,
-        ann_dir=ann_dir,
-        sequence_len=10,
-        sample_itvl=1,
-        transform=transform,
-    )
-
-    def test_samples(self):
-        assert self.dataset.__len__() == 8
+        assert dataset.__len__() == 0

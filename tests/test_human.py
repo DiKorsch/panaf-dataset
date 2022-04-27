@@ -13,8 +13,8 @@ class TestSingleApe:
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    data_dir = "data/single/videos"
-    ann_dir = "data/single/annotations"
+    data_dir = "tests/data/single/videos"
+    ann_dir = "tests/data/single/annotations"
 
     def test_low_threshold(self):
         """Test 5-frame sequence with 5-frame behaviour thresh."""
@@ -68,3 +68,25 @@ class TestSingleApe:
         )
 
         assert dataset.__len__() == 0
+
+    def test_check_behaviour_threshold(self):
+
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+            behaviour_threshold=1,
+        )
+
+        filename = "0YvgQsXboK"
+        ann = dataset.load_annotation(filename)
+        dataset.set_behaviour_threshold(value=5)
+
+        assert dataset.check_behaviour_threshold(
+            ann=ann, current_ape=0, frame_no=1, target_behaviour="walking"
+        )
+        assert not dataset.check_behaviour_threshold(
+            ann=ann, current_ape=0, frame_no=85, target_behaviour="walking"
+        )

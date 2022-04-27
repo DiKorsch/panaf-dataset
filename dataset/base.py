@@ -49,15 +49,35 @@ class PanAfDataset(Dataset):
         self.transform = transform
 
         self.samples = []
-        self.apes_per_video = {}
         self.initialise_dataset()
+
+        self.samples_by_video = {}
+        self.initialise_video_dict()
+        self.initialise_samples_by_video()
+
+        self.apes_per_video = {}
+
+    def initialise_video_dict(self):
+        for videopath in tqdm(self.data, desc="Initialising video dict"):
+            videoname = self.get_videoname(videopath)
+            self.samples_by_video[videoname] = []
+
+    def initialise_samples_by_video(self):
+        for sample in self.samples:
+            videoname = sample["video"]
+            # Check video dict already has entry as a key
+            assert videoname in self.samples_by_video.keys()
+            self.samples_by_video[videoname].append(sample)
+
+    def print_samples_by_video(self, video):
+        print(self.samples_by_video[video])
 
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
 
     def verify_ape_ids(self, no_of_apes, ids):
         for i in range(0, no_of_apes + 1):
-            if(i not in ids):
+            if i not in ids:
                 return False
         return True
 
@@ -68,11 +88,11 @@ class PanAfDataset(Dataset):
                 ids.append(detection["ape_id"])
 
         if not ids:
-            return False
-        
+            return None
+
         assert self.verify_ape_ids(max(ids), list(set(ids)))
 
-        return max(ids), list(set(ids))
+        return max(ids)
 
     def check_ape_exists(self, ann, frame_no, current_ape):
         ape = False
@@ -91,29 +111,6 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def get_ape_behaviour(self, ann, current_ape, frame_no):
-        for a in ann["annotations"]:
-            if a["frame_id"] == frame_no:
-                for d in a["detections"]:
-                    if d["ape_id"] == current_ape:
-                        return d["behaviour"]
-
-    def check_behaviour_threshold(self, ann, current_ape, frame_no):
-        try:
-            behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
-        except ValueError:
-            print("No behaviour found!")
-
-        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
-            future_behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
-            if future_behaviour != behaviour:
-                return False
-        return True
-
-    def check_validity(self):
-        # TODO: put all validity checks here
-        pass
-
     def load_annotation(self, filename):
         with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
             ann = json.load(handle)
@@ -126,7 +123,9 @@ class PanAfDataset(Dataset):
         return len(self.samples)
 
     def initialise_dataset(self):
-        for data in tqdm(self.data[:20], desc="Initialising samples", leave=False):
+        for data in tqdm(
+            self.data[:20], desc="Base class: Initialising samples", leave=False
+        ):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
@@ -135,7 +134,9 @@ class PanAfDataset(Dataset):
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
 
-            no_of_apes, ids = self.count_apes(ann)
+            no_of_apes = self.count_apes(ann)
+            if no_of_apes is None:
+                break
 
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1
@@ -172,16 +173,17 @@ class PanAfDataset(Dataset):
         return
 
     def get_ape_coords(self, video, ape_id, frame_idx):
+        bbox = None
+
         with open(f"{self.ann_path}/{video}.json", "rb") as handle:
             ann = json.load(handle)
-        try:
-            for a in ann["annotations"]:
-                if a["frame_id"] == frame_idx:
-                    for d in a["detections"]:
-                        if d["ape_id"] == ape_id:
-                            return d["bbox"]
-        except ValueError:
-            print(f"{video} {frame_idx}: couldnt find bbox for ape {ape_id}.")
+
+        for a in ann["annotations"]:
+            if a["frame_id"] == frame_idx:
+                for d in a["detections"]:
+                    if d["ape_id"] == ape_id:
+                        bbox = d["bbox"]
+        return bbox
 
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
 
@@ -202,13 +204,11 @@ class PanAfDataset(Dataset):
         return spatial_sample
 
     def get_video(self, name):
-        try:
-            for video_path in self.data:
-                if self.get_videoname(video_path) == name:
-                    video = mmcv.VideoReader(video_path)
-                    return video
-        except ValueError:
-            print(f"Couldn't find {name}.mp4")
+        video = None
+        for video_path in self.data:
+            if self.get_videoname(video_path) == name:
+                video = mmcv.VideoReader(video_path)
+        return video
 
     def __getitem__(self, index):
         sample = self.samples[index]

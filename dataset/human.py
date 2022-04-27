@@ -52,7 +52,7 @@ class SupervisedPanAf(PanAfDataset):
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
             ann = self.load_annotation(name)
-
+            no_of_frames = len(video)
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
 
@@ -73,35 +73,66 @@ class SupervisedPanAf(PanAfDataset):
                         frame_no += 1
                         continue
 
-                    sufficient_apes = self.check_sufficient_apes(
+                    current_behaviour = self.get_ape_behaviour(
                         ann, current_ape, frame_no
                     )
+                    valid_frames = 1
 
-                    if not sufficient_apes:
-                        frame_no += 1  # self.sequence_len
-                        continue
-
-                    behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
-
-                    behaviour_threshold = self.check_behaviour_threshold(
-                        ann, current_ape, frame_no, behaviour
-                    )
-
-                    if not behaviour_threshold:
-                        frame_no += 1
-                        continue
-
-                    if (len(video) - frame_no) >= self.sequence_len:
-                        self.samples.append(
-                            {
-                                "video": name,
-                                "ape_id": current_ape,
-                                "behaviour": behaviour,
-                                "start_frame": frame_no,
-                            }
+                    for look_ahead_frame_no in range(frame_no + 1, no_of_frames + 1):
+                        ape = self.check_ape_exists(
+                            ann, look_ahead_frame_no, current_ape
                         )
-                    frame_no += self.stride
-        return
+
+                        if (ape) and (
+                            self.get_ape_behaviour(
+                                ann, current_ape, look_ahead_frame_no
+                            )
+                            == current_behaviour
+                        ):
+                            valid_frames += 1
+                        else:
+                            break
+
+                    if valid_frames < self.behaviour_threshold:
+                        frame_no += valid_frames
+                        continue
+
+                    last_valid_frame = frame_no + valid_frames
+                    for valid_frame_no in range(
+                        frame_no, last_valid_frame, self.stride
+                    ):
+                        if (valid_frame_no + self.stride) >= last_valid_frame:
+                            correct_activity = False
+                            for temporal_frame in range(
+                                valid_frame_no, self.sequence_len
+                            ):
+                                ape = self.check_ape_exists(
+                                    ann, temporal_frame, current_ape
+                                )
+                                ape_activity = self.get_ape_behaviour(
+                                    ann, temporal_frame, current_ape
+                                )
+                                if (
+                                    (not ape) or
+                                    (ape_activity != current_behaviour) or
+                                    (temporal_frame > no_of_frames)
+                                ):
+                                    correct_activity = False
+                                    break
+                            if not correct_activity:
+                                break
+
+                        if (no_of_frames - valid_frame_no) >= self.sequence_len:
+                            self.samples.append(
+                                {
+                                    "video": name,
+                                    "ape_id": current_ape,
+                                    "behaviour": current_behaviour,
+                                    "start_frame": valid_frame_no,
+                                }
+                            )
+
+                    frame_no = last_valid_frame
 
     def __getitem__(self, index):
         sample = self.samples[index]

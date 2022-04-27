@@ -123,7 +123,9 @@ class PanAfDataset(Dataset):
         return len(self.samples)
 
     def initialise_dataset(self):
-        for data in tqdm(self.data[:20], desc="Initialising samples", leave=False):
+        for data in tqdm(
+            self.data[:20], desc="Base class: Initialising samples", leave=False
+        ):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
@@ -171,16 +173,17 @@ class PanAfDataset(Dataset):
         return
 
     def get_ape_coords(self, video, ape_id, frame_idx):
+        bbox = None
+
         with open(f"{self.ann_path}/{video}.json", "rb") as handle:
             ann = json.load(handle)
-        try:
-            for a in ann["annotations"]:
-                if a["frame_id"] == frame_idx:
-                    for d in a["detections"]:
-                        if d["ape_id"] == ape_id:
-                            return d["bbox"]
-        except ValueError:
-            print(f"{video} {frame_idx}: couldnt find bbox for ape {ape_id}.")
+
+        for a in ann["annotations"]:
+            if a["frame_id"] == frame_idx:
+                for d in a["detections"]:
+                    if d["ape_id"] == ape_id:
+                        bbox = d["bbox"]
+        return bbox
 
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
 
@@ -201,13 +204,11 @@ class PanAfDataset(Dataset):
         return spatial_sample
 
     def get_video(self, name):
-        try:
-            for video_path in self.data:
-                if self.get_videoname(video_path) == name:
-                    video = mmcv.VideoReader(video_path)
-                    return video
-        except ValueError:
-            print(f"Couldn't find {name}.mp4")
+        video = None
+        for video_path in self.data:
+            if self.get_videoname(video_path) == name:
+                video = mmcv.VideoReader(video_path)
+        return video
 
     def __getitem__(self, index):
         sample = self.samples[index]

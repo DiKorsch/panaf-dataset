@@ -111,25 +111,6 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def get_ape_behaviour(self, ann, current_ape, frame_no):
-        for a in ann["annotations"]:
-            if a["frame_id"] == frame_no:
-                for d in a["detections"]:
-                    if d["ape_id"] == current_ape:
-                        return d["behaviour"]
-
-    def check_behaviour_threshold(self, ann, current_ape, frame_no):
-        try:
-            behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
-        except ValueError:
-            print("No behaviour found!")
-
-        for look_ahead_frame_no in range(frame_no, frame_no + self.sequence_len):
-            future_behaviour = self.get_ape_behaviour(ann, current_ape, frame_no)
-            if future_behaviour != behaviour:
-                return False
-        return True
-
     def load_annotation(self, filename):
         with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
             ann = json.load(handle)

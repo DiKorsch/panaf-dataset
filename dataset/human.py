@@ -28,6 +28,9 @@ class SupervisedPanAf(PanAfDataset):
                         return d["behaviour"]
         return None
 
+    def set_behaviour_threshold(self, value):
+        self.behaviour_threshold = value
+
     def check_behaviour_threshold(self, ann, current_ape, frame_no, target_behaviour):
         for look_ahead_frame_no in range(frame_no, frame_no + self.behaviour_threshold):
             future_behaviour = self.get_ape_behaviour(

@@ -28,3 +28,18 @@ class TestMultipleApes:
             transform=self.transform,
         )
         assert dataset.__len__() == 67
+
+    def test_count_apes(self):
+        """Test dataset.verify_ape_ids() method."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+        )
+
+        # Test annotation with 2 apes
+        filename = "1oZGHFgDpe"
+        ann = dataset.load_annotation(filename)
+        assert dataset.count_apes(ann) == 1

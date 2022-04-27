@@ -128,4 +128,17 @@ class TestSingleApe:
         ape_ids = [0, 1, 2]
         assert not dataset.verify_ape_ids(ape_no, ape_ids)
 
+    def test_count_apes(self):
+        """Test dataset.verify_ape_ids() method."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+        )
 
+        # Test annotation with 1 ape
+        filename = "0YvgQsXboK"
+        ann = dataset.load_annotation(filename)
+        assert dataset.count_apes(ann) == 0

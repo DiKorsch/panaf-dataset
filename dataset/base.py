@@ -88,7 +88,7 @@ class PanAfDataset(Dataset):
                 ids.append(detection["ape_id"])
 
         if not ids:
-            return False
+            return None
 
         assert self.verify_ape_ids(max(ids), list(set(ids)))
 
@@ -130,10 +130,6 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def check_validity(self):
-        # TODO: put all validity checks here
-        pass
-
     def load_annotation(self, filename):
         with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
             ann = json.load(handle)
@@ -156,7 +152,7 @@ class PanAfDataset(Dataset):
             assert len(video) == len(ann["annotations"])
 
             no_of_apes = self.count_apes(ann)
-            if not no_of_apes:
+            if no_of_apes is None:
                 break
 
             for current_ape in range(0, no_of_apes + 1):

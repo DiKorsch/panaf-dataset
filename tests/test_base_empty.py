@@ -2,7 +2,7 @@
 Base class tests: ...
 Tests on sample with no apes detected in any frames.
 """
-import pytest
+
 from torchvision import transforms
 from dataset import PanAfDataset
 

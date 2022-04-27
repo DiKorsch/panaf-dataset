@@ -83,7 +83,7 @@ class TestSingleApe:
         filename = "0YvgQsXboK"
         ann = dataset.load_annotation(filename)
         dataset.set_behaviour_threshold(value=5)
-        
+
         assert dataset.check_behaviour_threshold(
             ann=ann, current_ape=0, frame_no=1, target_behaviour="walking"
         )

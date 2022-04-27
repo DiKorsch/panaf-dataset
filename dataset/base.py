@@ -90,7 +90,9 @@ class PanAfDataset(Dataset):
         if not ids:
             return None
 
-        assert self.verify_ape_ids(max(ids), list(set(ids)))
+        assert self.verify_ape_ids(
+            max(ids), list(set(ids))
+        ), f"{ann['video'], max(ids), list(set(ids))}"
 
         return max(ids)
 

@@ -92,7 +92,7 @@ class PanAfDataset(Dataset):
 
         assert self.verify_ape_ids(max(ids), list(set(ids)))
 
-        return max(ids), list(set(ids))
+        return max(ids)
 
     def check_ape_exists(self, ann, frame_no, current_ape):
         ape = False
@@ -155,7 +155,7 @@ class PanAfDataset(Dataset):
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
 
-            no_of_apes, ids = self.count_apes(ann)
+            no_of_apes = self.count_apes(ann)
 
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1

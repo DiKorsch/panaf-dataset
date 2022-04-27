@@ -14,11 +14,17 @@ class SupervisedPanAf(PanAfDataset):
         stride: int = None,
         transform: Optional[Callable] = None,
         behaviour_threshold: int = 72,
+        split: str = None,
     ):
         self.behaviour_threshold = behaviour_threshold
+        self.split = split
+
         super().__init__(
             data_dir, ann_dir, sequence_len, sample_itvl, stride, transform
         )
+
+    def count_videos(self):
+        return len(self.samples_by_video)
 
     def get_ape_behaviour(self, ann, current_ape, frame_no):
         for a in ann["annotations"]:

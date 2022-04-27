@@ -28,8 +28,6 @@ def test_train_split():
     )
 
     assert dataset.count_videos() == 400
-    print(f"Train samples: {dataset.__len__()}")
-    print(f"IujvFoEGd6 samples: {dataset.print_samples_by_video('IujvFoEGd6')}")
 
 
 def test_val_split():
@@ -54,7 +52,6 @@ def test_val_split():
     )
 
     assert dataset.count_videos() == 25
-    print(f"Validation samples: {dataset.__len__()}")
 
 
 def test_test_split():
@@ -79,4 +76,3 @@ def test_test_split():
     )
 
     assert dataset.count_videos() == 75
-    print(f"Test samples: {dataset.__len__()}")

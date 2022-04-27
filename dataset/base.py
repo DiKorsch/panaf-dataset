@@ -156,6 +156,8 @@ class PanAfDataset(Dataset):
             assert len(video) == len(ann["annotations"])
 
             no_of_apes = self.count_apes(ann)
+            if not no_of_apes:
+                break
 
             for current_ape in range(0, no_of_apes + 1):
                 frame_no = 1

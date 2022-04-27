@@ -49,15 +49,35 @@ class PanAfDataset(Dataset):
         self.transform = transform
 
         self.samples = []
-        self.apes_per_video = {}
         self.initialise_dataset()
+
+        self.samples_by_video = {}
+        self.initialise_video_dict()
+        self.initialise_samples_by_video()
+
+        self.apes_per_video = {}
+
+    def initialise_video_dict(self):
+        for videopath in tqdm(self.data, desc="Initialising video dict"):
+            videoname = self.get_videoname(videopath)
+            self.samples_by_video[videoname] = []
+
+    def initialise_samples_by_video(self):
+        for sample in self.samples:
+            videoname = sample["video"]
+            # Check video dict already has entry as a key
+            assert videoname in self.samples_by_video.keys()
+            self.samples_by_video[videoname].append(sample)
+
+    def print_samples_by_video(self, video):
+        print(self.samples_by_video[video])
 
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
 
     def verify_ape_ids(self, no_of_apes, ids):
         for i in range(0, no_of_apes + 1):
-            if(i not in ids):
+            if i not in ids:
                 return False
         return True
 
@@ -69,7 +89,7 @@ class PanAfDataset(Dataset):
 
         if not ids:
             return False
-        
+
         assert self.verify_ape_ids(max(ids), list(set(ids)))
 
         return max(ids), list(set(ids))

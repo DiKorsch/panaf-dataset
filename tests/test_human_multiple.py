@@ -15,8 +15,8 @@ class TestMultipleApes:
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    data_dir = "data/multiple/videos"
-    ann_dir = "data/multiple/annotations"
+    data_dir = "tests/data/multiple/videos"
+    ann_dir = "tests/data/multiple/annotations"
 
     def test_low_threshold(self):
         """Test 5-frame sequence with 5-frame behaviour thresh."""

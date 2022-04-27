@@ -15,8 +15,8 @@ class TestSingleApe:
         [transforms.ToTensor(), transforms.Resize((244, 244))]
     )
 
-    data_dir = "data/single/videos"
-    ann_dir = "data/single/annotations"
+    data_dir = "tests/data/single/videos"
+    ann_dir = "tests/data/single/annotations"
 
     def test_small_sequence(self):
         """Test 5-frame sequence."""
@@ -106,3 +106,26 @@ class TestSingleApe:
             transform=self.transform,
         )
         assert dataset.__len__() == 0
+
+    def test_verify_ape_ids(self):
+        """Test dataset.verify_ape_ids() method."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+        )
+
+        # True example
+        ape_no = 3
+        ape_ids = [0, 1, 2, 3]
+
+        assert dataset.verify_ape_ids(ape_no, ape_ids)
+
+        # False example
+        ape_no = 3
+        ape_ids = [0, 1, 2]
+        assert not dataset.verify_ape_ids(ape_no, ape_ids)
+
+

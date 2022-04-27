@@ -28,4 +28,4 @@ class TestEmpty:
         # Test annotation with no apes
         filename = "ACP0000b9x"
         ann = dataset.load_annotation(filename)
-        assert not dataset.count_apes(ann)
+        assert dataset.count_apes(ann) is None

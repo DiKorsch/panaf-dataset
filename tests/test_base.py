@@ -142,3 +142,19 @@ class TestSingleApe:
         filename = "0YvgQsXboK"
         ann = dataset.load_annotation(filename)
         assert dataset.count_apes(ann) == 0
+
+    def test_get_ape_behaviour(self):
+        """Test dataset.verify_ape_ids() method."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+        )
+
+        # Test annotation with 1 ape
+        filename = "0YvgQsXboK"
+        ann = dataset.load_annotation(filename)
+        behaviour = dataset.get_ape_behaviour(ann=ann, current_ape=0, frame_no=1)
+        assert behaviour == "walking"

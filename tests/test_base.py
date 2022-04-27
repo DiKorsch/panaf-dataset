@@ -156,4 +156,3 @@ class TestSingleApe:
         # Test annotation with 1 ape
         video = dataset.get_video("foobar")
         assert video is None
-

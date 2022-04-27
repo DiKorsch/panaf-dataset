@@ -26,10 +26,9 @@ class TestMultipleApes:
             sequence_len=5,
             sample_itvl=1,
             transform=self.transform,
-            behaviour_threshold=5,
+            behaviour_threshold=72,
         )
-        dataset.print_samples()
-        assert dataset.__len__() == 65
+        assert dataset.__len__() == 51
 
     def test_get_ape_behaviour(self):
         """Test dataset.verify_ape_ids() method."""

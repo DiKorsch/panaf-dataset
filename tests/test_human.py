@@ -41,7 +41,7 @@ class TestSingleApe:
             behaviour_threshold=72,
         )
 
-        assert dataset.__len__() == 3
+        assert dataset.__len__() == 17
 
     def test_mid_threshold_w_stride(self):
 
@@ -55,7 +55,7 @@ class TestSingleApe:
             behaviour_threshold=72,
         )
 
-        assert dataset.__len__() == 1
+        assert dataset.__len__() == 3
 
     def test_high_threshold(self):
         dataset = SupervisedPanAf(

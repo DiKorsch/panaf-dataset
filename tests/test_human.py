@@ -68,3 +68,22 @@ class TestSingleApe:
         )
 
         assert dataset.__len__() == 0
+
+    def test_check_behaviour_threshold(self):
+
+        dataset = SupervisedPanAf(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            transform=self.transform,
+            behaviour_threshold=1,
+        )
+
+        filename = "0YvgQsXboK"
+        ann = dataset.load_annotation(filename)
+        dataset.set_behaviour_threshold()
+
+        dataset.check_behaviour_threshold(
+            ann=ann, current_ape=0, frame_no=1, target_behaviour="walking"
+        )

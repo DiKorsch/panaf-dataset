@@ -54,9 +54,24 @@ class SupervisedPanAf(PanAfDataset):
         self.behaviour_threshold = behaviour_threshold
         self.split = split
 
+        self.classes = {
+            "camera_interaction": 0,
+            "climbing_down": 1,
+            "climbing_up": 2,
+            "hanging": 3,
+            "running": 4,
+            "sitting": 5,
+            "sitting_on_back": 6,
+            "standing": 7,
+            "walking": 8,
+        }
+
         super().__init__(
             data_dir, ann_dir, sequence_len, sample_itvl, stride, transform
         )
+
+    def get_behaviour_index(self, behaviour):
+        return self.classes[behaviour]
 
     def count_videos(self):
         return len(self.samples_by_video)
@@ -181,6 +196,7 @@ class SupervisedPanAf(PanAfDataset):
         frame_idx = sample["start_frame"]
         name = sample["video"]
         behaviour = sample["behaviour"]
+        behaviour_idx = self.get_behaviour_index(behaviour)
         video = self.get_video(name)
         spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
-        return spatial_sample, sample
+        return spatial_sample, behaviour_idx

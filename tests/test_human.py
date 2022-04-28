@@ -96,6 +96,7 @@ class TestSingleApe:
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
         assert len(sequence.squeeze(dim=0)) == 10
+        assert behaviour == 8
 
     def test_mid_threshold_w_seqlen20(self):
 
@@ -112,6 +113,7 @@ class TestSingleApe:
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
         assert len(sequence.squeeze(dim=0)) == 20
+        assert behaviour == 8
 
     def test_mid_threshold_w_stride(self):
 

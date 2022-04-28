@@ -46,6 +46,22 @@ class SupervisedPanAf(PanAfDataset):
                 return False
         return True
 
+    def get_valid_frames(
+        self, ann, current_ape, current_behaviour, frame_no, no_of_frames
+    ):
+        valid_frames = 1
+        for look_ahead_frame_no in range(frame_no + 1, no_of_frames + 1):
+            ape = self.check_ape_exists(ann, look_ahead_frame_no, current_ape)
+
+            if (ape) and (
+                self.get_ape_behaviour(ann, current_ape, look_ahead_frame_no)
+                == current_behaviour
+            ):
+                valid_frames += 1
+            else:
+                return valid_frames
+        return valid_frames
+
     def initialise_dataset(self):
         for data in tqdm(self.data, desc="Initialising samples", leave=False):
 
@@ -76,22 +92,10 @@ class SupervisedPanAf(PanAfDataset):
                     current_behaviour = self.get_ape_behaviour(
                         ann, current_ape, frame_no
                     )
-                    valid_frames = 1
 
-                    for look_ahead_frame_no in range(frame_no + 1, no_of_frames + 1):
-                        ape = self.check_ape_exists(
-                            ann, look_ahead_frame_no, current_ape
-                        )
-
-                        if (ape) and (
-                            self.get_ape_behaviour(
-                                ann, current_ape, look_ahead_frame_no
-                            )
-                            == current_behaviour
-                        ):
-                            valid_frames += 1
-                        else:
-                            break
+                    valid_frames = self.get_valid_frames(
+                        ann, current_ape, current_behaviour, frame_no, no_of_frames
+                    )
 
                     if valid_frames < self.behaviour_threshold:
                         frame_no += valid_frames

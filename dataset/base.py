@@ -235,6 +235,31 @@ class PanAfDataset(Dataset):
 
         return spatial_sample
 
+    def build_dense_sample(self, ann, name, ape_id, frame_idx):
+
+        dense_sample = []
+
+        assert ann["video"] == name
+
+        for i in range(0, self.total_seq_len, self.sample_itvl):
+            for frame in ann["annotations"]:
+                if frame["frame_id"] == frame_idx + i:
+                    for det in frame["detections"]:
+                        if det["ape_id"] == ape_id:
+                            iuv = torch.cat(
+                                (
+                                    det["labels"][None].type(torch.float32),
+                                    det["uv"] * 255.0,
+                                )
+                            ).type(torch.uint8)
+                            iuv = self.transform(iuv)
+                            dense_sample.append(iuv)
+
+        # Check frames in sample match sequence length
+        assert len(dense_sample) == self.sequence_len
+
+        return dense_sample
+
     def get_video(self, name):
         video = None
         for video_path in self.data:

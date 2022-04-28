@@ -241,10 +241,11 @@ class PanAfDataset(Dataset):
 
         assert ann["video"] == name
 
-        for i in range(0, self.total_seq_len, self.sample_itvl):
-            for frame in ann["annotations"]:
-                if frame["frame_id"] == frame_idx + i:
-                    for det in frame["detections"]:
+        for i in range(len(ann["annotations"])):
+            if ann["annotations"][i]["frame_id"] == frame_idx:
+
+                for j in range(0, self.total_seq_len, self.sample_itvl):
+                    for det in ann["annotations"][i + j]["detections"]:
                         if det["ape_id"] == ape_id:
                             iuv = torch.cat(
                                 (
@@ -254,6 +255,8 @@ class PanAfDataset(Dataset):
                             ).type(torch.uint8)
                             iuv = self.transform(iuv)
                             dense_sample.append(iuv)
+                break
+        return dense_sample
 
         # Check frames in sample match sequence length
         assert len(dense_sample) == self.sequence_len

@@ -1,10 +1,45 @@
 import mmcv
-from tqdm import tqdm
 from dataset.base import PanAfDataset
 from typing import Callable, Optional
 
 
 class SupervisedPanAf(PanAfDataset):
+    """
+    A Pan-African Pytorch Dataset class for supervised training.
+
+    Args:
+
+     Paths:
+         data_dir: Path to video files (i.e., 'data/train').
+         ann_dir: Path to annotation files (i.e., 'annotations/train')
+
+     Sample building:
+
+         sequence_len: Number of frames in each sample. The output tensor
+         will have shape (B x C x T x W x H) where B = batch_size, C = channels,
+         T = sequence_len, W = width and H = height.
+
+         sample_itvl: Number of frames between each sample frame i.e., if
+         sample_itvl = 1 consecutive frames are sampled, if sample_itvl = 2
+         every other frame is sampled.
+
+         *Note if sequence_len = 5 and sample_itvl = 2, the output tensor will
+         be of shape (B x C x 5 x H x W) which is sampled from a tensor of
+         shape (B x C x 10 x H x W).
+
+         stride: Number of frames between samples. By default, this is
+         sequence_len x sample_itvl. This means samples are built consecutively
+         and without overlap. If the stride is manually set to a lower value
+         samples will be generated with overlapping frames i.e., samples built
+         with sequence_len = 20 and stride = 10 will have a 10-frame overlap.
+
+         behaviour_threshold: Number of frames an ape must be both present and
+         displaying a specific behaviour for a sample to be valid.
+
+     Transform:
+         transform: List of transforms to be applied.
+    """
+
     def __init__(
         self,
         data_dir: str = ".",
@@ -63,7 +98,7 @@ class SupervisedPanAf(PanAfDataset):
         return valid_frames
 
     def initialise_dataset(self):
-        for data in tqdm(self.data, desc="Initialising samples", leave=False):
+        for data in self.data:
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)

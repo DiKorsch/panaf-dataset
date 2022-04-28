@@ -98,13 +98,15 @@ class SupervisedPanAf(PanAfDataset):
                         continue
 
                     last_valid_frame = frame_no + valid_frames
+
                     for valid_frame_no in range(
                         frame_no, last_valid_frame, self.stride
                     ):
                         if (valid_frame_no + self.stride) >= last_valid_frame:
                             correct_activity = False
+
                             for temporal_frame in range(
-                                valid_frame_no, self.sequence_len
+                                valid_frame_no, self.total_seq_len
                             ):
                                 ape = self.check_ape_exists(
                                     ann, temporal_frame, current_ape
@@ -113,16 +115,16 @@ class SupervisedPanAf(PanAfDataset):
                                     ann, temporal_frame, current_ape
                                 )
                                 if (
-                                    (not ape) or
-                                    (ape_activity != current_behaviour) or
-                                    (temporal_frame > no_of_frames)
+                                    (not ape)
+                                    or (ape_activity != current_behaviour)
+                                    or (temporal_frame > no_of_frames)
                                 ):
                                     correct_activity = False
                                     break
                             if not correct_activity:
                                 break
 
-                        if (no_of_frames - valid_frame_no) >= self.sequence_len:
+                        if (no_of_frames - valid_frame_no) >= self.total_seq_len:
                             self.samples.append(
                                 {
                                     "video": name,

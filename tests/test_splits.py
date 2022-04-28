@@ -23,11 +23,13 @@ def test_train_split():
         ann_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
+        stride=5,
         transform=transform,
         behaviour_threshold=72,
     )
 
     assert dataset.count_videos() == 400
+    print(f"Training samples: {dataset.__len__()}")
 
 
 def test_val_split():
@@ -47,11 +49,13 @@ def test_val_split():
         ann_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
+        stride=5,
         transform=transform,
         behaviour_threshold=72,
     )
 
     assert dataset.count_videos() == 25
+    print(f"Validation samples: {dataset.__len__()}")
 
 
 def test_test_split():
@@ -71,8 +75,10 @@ def test_test_split():
         ann_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
+        stride=5,
         transform=transform,
         behaviour_threshold=72,
     )
 
     assert dataset.count_videos() == 75
+    print(f"Test samples: {dataset.__len__()}")

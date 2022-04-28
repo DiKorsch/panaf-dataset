@@ -2,7 +2,6 @@ import json
 import mmcv
 import torch
 from glob import glob
-from tqdm import tqdm
 from torch.utils.data import Dataset
 from typing import Callable, Optional
 
@@ -12,6 +11,39 @@ from typing import Callable, Optional
 
 
 class PanAfDataset(Dataset):
+    """
+    Base class for Pan-African Pytorch Dataset
+
+    Args:
+
+     Paths:
+         data_dir: Path to video files (i.e., 'data/train').
+         ann_dir: Path to annotation files (i.e., 'annotations/train')
+
+     Sample building:
+
+         sequence_len: Number of frames in each sample. The output tensor
+         will have shape (B x C x T x W x H) where B = batch_size, C = channels,
+         T = sequence_len, W = width and H = height.
+
+         sample_itvl: Number of frames between each sample frame i.e., if
+         sample_itvl = 1 consecutive frames are sampled, if sample_itvl = 2
+         every other frame is sampled.
+
+         *Note if sequence_len = 5 and sample_itvl = 2, the output tensor will
+         be of shape (B x C x 5 x H x W) which is sampled from a tensor of
+         shape (B x C x 10 x H x W).
+
+         stride: Number of frames between samples. By default, this is
+         sequence_len x sample_itvl. This means samples are built consecutively
+         and without overlap. If the stride is manually set to a lower value
+         samples will be generated with overlapping frames i.e., samples built
+         with sequence_len = 20 and stride = 10 will have a 10-frame overlap.
+
+     Transform:
+         transform: List of transforms to be applied.
+    """
+
     def __init__(
         self,
         data_dir: str = ".",
@@ -58,7 +90,7 @@ class PanAfDataset(Dataset):
         self.apes_per_video = {}
 
     def initialise_video_dict(self):
-        for videopath in tqdm(self.data, desc="Initialising video dict"):
+        for videopath in self.data:
             videoname = self.get_videoname(videopath)
             self.samples_by_video[videoname] = []
 
@@ -125,9 +157,7 @@ class PanAfDataset(Dataset):
         return len(self.samples)
 
     def initialise_dataset(self):
-        for data in tqdm(
-            self.data[:20], desc="Base class: Initialising samples", leave=False
-        ):
+        for data in self.data:
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)

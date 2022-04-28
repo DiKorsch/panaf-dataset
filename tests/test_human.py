@@ -112,7 +112,6 @@ class TestSingleApe:
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
         assert len(sequence.squeeze(dim=0)) == 20
-        dataset.print_samples()
 
     def test_mid_threshold_w_stride(self):
 

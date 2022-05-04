@@ -1,6 +1,7 @@
 import json
 import mmcv
 import torch
+import pickle
 from glob import glob
 from torch.utils.data import Dataset
 from typing import Callable, Optional
@@ -162,7 +163,7 @@ class PanAfDataset(Dataset):
                 ann = json.load(handle)
         else:
             with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
-                ann = json.load(handle)
+                ann = pickle.load(handle)
         return ann
 
     def print_samples(self):

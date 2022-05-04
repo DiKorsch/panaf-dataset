@@ -57,3 +57,39 @@ class TestDense:
         plt.show()
 
         assert len(dense_sample) == 8
+
+    def test_check_dense_exists_true(self):
+        """Test 5-frame sequence."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=5,
+            transform=self.transform,
+        )
+
+        with open("tests/data/cases/dense/0YvgQsXboK_dense.pkl", "rb") as handle:
+            ann = pickle.load(handle)
+
+        dense = dataset.check_dense_exists(ann=ann, frame_no=1, current_ape=0)
+
+        assert dense
+
+    def test_check_dense_exists_false(self):
+        """Test 5-frame sequence."""
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=5,
+            transform=self.transform,
+        )
+
+        with open("tests/data/cases/dense/0YvgQsXboK_dense.pkl", "rb") as handle:
+            ann = pickle.load(handle)
+
+        dense = dataset.check_dense_exists(ann=ann, frame_no=82, current_ape=0)
+
+        assert not dense

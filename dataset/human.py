@@ -47,6 +47,7 @@ class SupervisedPanAf(PanAfDataset):
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
+        dense: int = None,
         transform: Optional[Callable] = None,
         behaviour_threshold: int = 72,
         split: str = None,
@@ -67,7 +68,7 @@ class SupervisedPanAf(PanAfDataset):
         }
 
         super().__init__(
-            data_dir, ann_dir, sequence_len, sample_itvl, stride, transform
+            data_dir, ann_dir, sequence_len, sample_itvl, stride, dense, transform
         )
 
     def get_behaviour_index(self, behaviour):

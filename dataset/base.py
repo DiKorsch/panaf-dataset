@@ -51,6 +51,7 @@ class PanAfDataset(Dataset):
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
+        dense: int = None,
         transform: Optional[Callable] = None,
     ):
         super(PanAfDataset, self).__init__()
@@ -77,6 +78,8 @@ class PanAfDataset(Dataset):
             self.stride = self.total_seq_len
         else:
             self.stride = stride
+
+        self.dense = dense
 
         self.transform = transform
 

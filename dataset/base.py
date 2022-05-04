@@ -133,13 +133,21 @@ class PanAfDataset(Dataset):
 
     def check_ape_exists(self, ann, frame_no, current_ape):
         ape = False
-
         for a in ann["annotations"]:
             if a["frame_id"] == frame_no:
                 for d in a["detections"]:
                     if d["ape_id"] == current_ape:
                         ape = True
         return ape
+
+    def check_dense_exists(self, ann, frame_no, current_ape):
+        dense = False
+        for a in ann["annotations"]:
+            if a["frame_id"] == frame_no:
+                for d in a["detections"]:
+                    if d["ape_id"] == current_ape and "dense" in d.keys():
+                        dense = True
+        return dense
 
     def check_sufficient_apes(self, ann, current_ape, frame_no):
         for look_ahead_frame_no in range(frame_no, frame_no + self.total_seq_len):
@@ -148,9 +156,13 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def load_annotation(self, filename):
-        with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
-            ann = json.load(handle)
+    def load_annotation(self, filename: str = None, type: str = None):
+        if type is None:
+            with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
+                ann = json.load(handle)
+        else:
+            with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
+                ann = json.load(handle)
         return ann
 
     def print_samples(self):
@@ -164,7 +176,7 @@ class PanAfDataset(Dataset):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
-            ann = self.load_annotation(name)
+            ann = self.load_annotation(name, self.dense)
 
             # Check no of frames match
             assert len(video) == len(ann["annotations"])

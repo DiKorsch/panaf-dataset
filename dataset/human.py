@@ -118,7 +118,7 @@ class SupervisedPanAf(PanAfDataset):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
-            ann = self.load_annotation(name)
+            ann = self.load_annotation(name, self.dense)
             no_of_frames = len(video)
             # Check no of frames match
             assert len(video) == len(ann["annotations"])

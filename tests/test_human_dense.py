@@ -24,7 +24,7 @@ class TestDenseInstantiation:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            dense=True,
+            type='rd',
             transform=self.transform,
         )
 
@@ -34,7 +34,7 @@ class TestDenseInstantiation:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            dense=None,
+            type='r',
             transform=self.transform,
         )
 

@@ -1,4 +1,5 @@
 import mmcv
+from tqdm import tqdm
 from dataset.base import PanAfDataset
 from typing import Callable, Optional
 
@@ -108,13 +109,21 @@ class SupervisedPanAf(PanAfDataset):
                 self.get_ape_behaviour(ann, current_ape, look_ahead_frame_no)
                 == current_behaviour
             ):
-                valid_frames += 1
+                if self.dense is None:
+                    valid_frames += 1
+                else:
+                    dense = self.check_dense_exists(
+                        ann, look_ahead_frame_no, current_ape
+                    )
+                    if dense:
+                        valid_frames += 1
             else:
                 return valid_frames
+
         return valid_frames
 
     def initialise_dataset(self):
-        for data in self.data:
+        for data in tqdm(self.data):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)

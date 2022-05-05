@@ -25,7 +25,9 @@ class TestDense:
             stride=5,
             transform=self.transform,
         )
-        with open("tests/data/cases/dense/0hu96Jv2As_dense.pkl", "rb") as handle:
+        with open(
+            "tests/data/cases/dense/example_one/annotations/0hu96Jv2As.pkl", "rb"
+        ) as handle:
             ann = pickle.load(handle)
 
         dense_sample = dataset.build_dense_sample(ann, "0hu96Jv2As", 0, 1)
@@ -46,7 +48,9 @@ class TestDense:
             stride=5,
             transform=self.transform,
         )
-        with open("tests/data/cases/dense/0YvgQsXboK_dense.pkl", "rb") as handle:
+        with open(
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+        ) as handle:
             ann = pickle.load(handle)
 
         dense_sample = dataset.build_dense_sample(ann, "0YvgQsXboK", 0, 1)
@@ -69,7 +73,9 @@ class TestDense:
             transform=self.transform,
         )
 
-        with open("tests/data/cases/dense/0YvgQsXboK_dense.pkl", "rb") as handle:
+        with open(
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+        ) as handle:
             ann = pickle.load(handle)
 
         dense = dataset.check_dense_exists(ann=ann, frame_no=1, current_ape=0)
@@ -87,7 +93,9 @@ class TestDense:
             transform=self.transform,
         )
 
-        with open("tests/data/cases/dense/0YvgQsXboK_dense.pkl", "rb") as handle:
+        with open(
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+        ) as handle:
             ann = pickle.load(handle)
 
         dense = dataset.check_dense_exists(ann=ann, frame_no=82, current_ape=0)

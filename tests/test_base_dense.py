@@ -14,6 +14,7 @@ class TestDense:
 
     data_dir = "tests/data/single/videos"
     ann_dir = "tests/data/single/annotations"
+    dense_dir = "tests/data/single/annotations"
 
     def test_small_sequence(self):
         """Test 5-frame sequence."""
@@ -101,3 +102,19 @@ class TestDense:
         dense = dataset.check_dense_exists(ann=ann, frame_no=82, current_ape=0)
 
         assert not dense
+
+    def test_get_dense_annotation(self):
+
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            dense_dir=self.dense_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=5,
+            transform=self.transform,
+        )
+
+        ann = dataset.get_dense_annotation('0YvgQsXboK')
+
+        assert ann['video'] == '0YvgQsXboK'

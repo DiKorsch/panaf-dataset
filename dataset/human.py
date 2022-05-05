@@ -45,6 +45,7 @@ class SupervisedPanAf(PanAfDataset):
         self,
         data_dir: str = ".",
         ann_dir: str = ".",
+        dense_dir: str = ".",
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
@@ -69,7 +70,14 @@ class SupervisedPanAf(PanAfDataset):
         }
 
         super().__init__(
-            data_dir, ann_dir, sequence_len, sample_itvl, stride, dense, transform
+            data_dir,
+            ann_dir,
+            dense_dir,
+            sequence_len,
+            sample_itvl,
+            stride,
+            dense,
+            transform,
         )
 
     def get_behaviour_index(self, behaviour):

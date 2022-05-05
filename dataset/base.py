@@ -49,6 +49,7 @@ class PanAfDataset(Dataset):
         self,
         data_dir: str = ".",
         ann_dir: str = ".",
+        dense_dir: str = ".",
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
@@ -59,9 +60,11 @@ class PanAfDataset(Dataset):
 
         self.data_path = data_dir
         self.ann_path = ann_dir
+        self.dense_dir = dense_dir
         self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
-        #
+        self.dense_data = glob(f"{dense_dir}/**/*.pkl", recursive=True)
+
         # assert len(self.data) == len(self.anns), f"{len(self.data)}, {len(self.anns)}"
 
         # Number of frames in sequence
@@ -110,6 +113,9 @@ class PanAfDataset(Dataset):
 
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
+
+    def get_dense_ann_name(self, path):
+        return path.split("/")[-1].split(".")[0].split("_")[0]
 
     def verify_ape_ids(self, no_of_apes, ids):
         for i in range(0, no_of_apes + 1):
@@ -289,6 +295,14 @@ class PanAfDataset(Dataset):
             if self.get_videoname(video_path) == name:
                 video = mmcv.VideoReader(video_path)
         return video
+
+    def get_dense_annotation(self, name):
+        dense_annotation = None
+        for path in self.dense_data:
+            filename = self.get_dense_ann_name(path)
+            if filename == name:
+                dense_annotation = self.load_annotation(name, self.dense)
+        return dense_annotation
 
     def __getitem__(self, index):
         sample = self.samples[index]

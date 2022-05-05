@@ -53,7 +53,7 @@ class PanAfDataset(Dataset):
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
-        dense: int = None,
+        type: str = "r",
         transform: Optional[Callable] = None,
     ):
         super(PanAfDataset, self).__init__()
@@ -83,7 +83,7 @@ class PanAfDataset(Dataset):
         else:
             self.stride = stride
 
-        self.dense = dense
+        self.type = [c for c in type]
 
         self.transform = transform
 
@@ -163,8 +163,8 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def load_annotation(self, filename: str = None, type: str = None):
-        if type is None:
+    def load_annotation(self, filename: str = None):
+        if 'd' not in self.type:
             with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
                 ann = json.load(handle)
         else:
@@ -172,6 +172,7 @@ class PanAfDataset(Dataset):
                 with open(f"{self.ann_path}/{filename}_dense.pkl", "rb") as handle:
                     ann = pickle.load(handle)
             except:
+
                 with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
                     ann = pickle.load(handle)
         return ann
@@ -187,7 +188,7 @@ class PanAfDataset(Dataset):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
-            ann = self.load_annotation(name, self.dense)
+            ann = self.load_annotation(name)
 
             # Check no of frames match
             assert len(video) == len(ann["annotations"])
@@ -301,7 +302,7 @@ class PanAfDataset(Dataset):
         for path in self.dense_data:
             filename = self.get_dense_ann_name(path)
             if filename == name:
-                dense_annotation = self.load_annotation(name, self.dense)
+                dense_annotation = self.load_annotation(name)
         return dense_annotation
 
     def __getitem__(self, index):

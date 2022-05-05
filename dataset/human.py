@@ -49,7 +49,7 @@ class SupervisedPanAf(PanAfDataset):
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
-        dense: int = None,
+        type: str = "r",
         transform: Optional[Callable] = None,
         behaviour_threshold: int = 72,
         split: str = None,
@@ -76,7 +76,7 @@ class SupervisedPanAf(PanAfDataset):
             sequence_len,
             sample_itvl,
             stride,
-            dense,
+            type,
             transform,
         )
 
@@ -117,7 +117,7 @@ class SupervisedPanAf(PanAfDataset):
                 self.get_ape_behaviour(ann, current_ape, look_ahead_frame_no)
                 == current_behaviour
             ):
-                if self.dense is None:
+                if "d" not in self.type:
                     valid_frames += 1
                 else:
                     dense = self.check_dense_exists(
@@ -135,7 +135,7 @@ class SupervisedPanAf(PanAfDataset):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)
-            ann = self.load_annotation(name, self.dense)
+            ann = self.load_annotation(name)
             no_of_frames = len(video)
             # Check no of frames match
             assert len(video) == len(ann["annotations"])

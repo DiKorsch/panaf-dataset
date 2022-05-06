@@ -164,7 +164,7 @@ class PanAfDataset(Dataset):
         return True
 
     def load_annotation(self, filename: str = None):
-        if 'd' not in self.type:
+        if "d" not in self.type:
             with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
                 ann = json.load(handle)
         else:
@@ -263,9 +263,7 @@ class PanAfDataset(Dataset):
         return spatial_sample
 
     def build_dense_sample(self, ann, name, ape_id, frame_idx):
-
         dense_sample = []
-
         assert ann["video"] == name
 
         for i in range(len(ann["annotations"])):
@@ -284,11 +282,20 @@ class PanAfDataset(Dataset):
                             dense_sample.append(iuv)
                 break
         return dense_sample
-
         # Check frames in sample match sequence length
         assert len(dense_sample) == self.sequence_len
-
         return dense_sample
+
+    def build_sample(self, name, ape_id, frame_idx):
+        sample = dict()
+        if "r" in self.type:
+            video = self.get_video(name)
+            sample['spatial_sample'] = self.build_spatial_sample(video, name, ape_id, frame_idx)
+        if "d" in self.type:
+            dense_annotation = self.get_dense_annotation(name)
+            sample['dense_sample'] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
+        # TODO: add flow
+        return sample
 
     def get_video(self, name):
         video = None
@@ -310,6 +317,6 @@ class PanAfDataset(Dataset):
         ape_id = sample["ape_id"]
         frame_idx = sample["start_frame"]
         name = sample["video"]
-        video = self.get_video(name)
-        spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
-        return spatial_sample
+
+        sample = self.build_sample(name, ape_id, frame_idx)
+        return sample

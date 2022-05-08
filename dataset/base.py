@@ -5,6 +5,9 @@ import pickle
 from glob import glob
 from torch.utils.data import Dataset
 from typing import Callable, Optional
+import torch.nn.functional as F
+
+from torchvision.transforms.functional import resize
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
@@ -172,7 +175,6 @@ class PanAfDataset(Dataset):
                 with open(f"{self.ann_path}/{filename}_dense.pkl", "rb") as handle:
                     ann = pickle.load(handle)
             except:
-
                 with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
                     ann = pickle.load(handle)
         return ann
@@ -245,9 +247,7 @@ class PanAfDataset(Dataset):
         return bbox
 
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
-
         spatial_sample = []
-
         for i in range(0, self.total_seq_len, self.sample_itvl):
             spatial_img = video[frame_idx + i - 1]
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
@@ -263,25 +263,29 @@ class PanAfDataset(Dataset):
         return spatial_sample
 
     def build_dense_sample(self, ann, name, ape_id, frame_idx):
+
         dense_sample = []
         assert ann["video"] == name
-
         for i in range(len(ann["annotations"])):
             if ann["annotations"][i]["frame_id"] == frame_idx:
-
                 for j in range(0, self.total_seq_len, self.sample_itvl):
                     for det in ann["annotations"][i + j]["detections"]:
                         if det["ape_id"] == ape_id:
-                            iuv = torch.cat(
-                                (
-                                    det["labels"][None].type(torch.float32),
-                                    det["uv"] * 255.0,
-                                )
-                            ).type(torch.uint8)
-                            iuv = self.transform(iuv)
-                            dense_sample.append(iuv)
+
+                            # Not used
+                            # iuv = torch.cat(
+                            #    (
+                            #        det["labels"][None].type(torch.float32),
+                            #        det["uv"] * 255.0,
+                            #    )
+                            # ).type(torch.uint8)
+                            # iuv = self.transform(iuv.numpy())
+                            # End
+
+                            dense_sample.append(det["uv"])
                 break
-        return dense_sample
+        dense_sample = [resize(x, size=(244, 244)) for x in dense_sample]
+        dense_sample = torch.stack(dense_sample, dim=0)
         # Check frames in sample match sequence length
         assert len(dense_sample) == self.sequence_len
         return dense_sample
@@ -290,10 +294,14 @@ class PanAfDataset(Dataset):
         sample = dict()
         if "r" in self.type:
             video = self.get_video(name)
-            sample['spatial_sample'] = self.build_spatial_sample(video, name, ape_id, frame_idx)
+            sample["spatial_sample"] = self.build_spatial_sample(
+                video, name, ape_id, frame_idx
+            )
         if "d" in self.type:
             dense_annotation = self.get_dense_annotation(name)
-            sample['dense_sample'] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
+            sample["dense_sample"] = self.build_dense_sample(
+                dense_annotation, name, ape_id, frame_idx
+            )
         # TODO: add flow
         return sample
 

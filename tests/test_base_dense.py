@@ -74,7 +74,28 @@ class TestDense:
 
         assert ann["video"] == "0YvgQsXboK"
 
-    def test_get_dense_sample(self):
+    def test_build_spatial_sample(self):
+        # TODO: move this to test_base.py
+        dataset = PanAfDataset(
+            data_dir=self.data_dir,
+            ann_dir=self.ann_dir,
+            dense_dir=self.dense_dir,
+            sequence_len=5,
+            sample_itvl=1,
+            stride=5,
+            type="r",
+            transform=self.transform,
+        )
+
+        dataloader = DataLoader(dataset)
+        sample = next(iter(dataloader))
+        assert len(sample["spatial_sample"].squeeze(dim=0)) == 5
+
+    def test_build_dense_sample(self):
+
+        transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Resize((244, 244))]
+        )
 
         dataset = PanAfDataset(
             data_dir=self.data_dir,
@@ -83,9 +104,14 @@ class TestDense:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            transform=self.transform,
+            type="rd",
+            transform=transform,
         )
 
         dataloader = DataLoader(dataset)
         sample = next(iter(dataloader))
-        assert len(sample['spatial_sample'].squeeze(dim=0)) == 5
+
+        print(sample.keys())
+
+        assert len(sample["spatial_sample"].squeeze(dim=0)) == 5
+        assert len(sample["dense_sample"].squeeze(dim=0)) == 5

@@ -80,6 +80,8 @@ class SupervisedPanAf(PanAfDataset):
             transform,
         )
 
+        self.samples_by_class()
+
     def get_behaviour_index(self, behaviour):
         return self.classes[behaviour]
 
@@ -129,6 +131,19 @@ class SupervisedPanAf(PanAfDataset):
                 return valid_frames
 
         return valid_frames
+
+    def samples_by_class(self):
+        self.samples_by_class = {}
+        for sample in self.samples:
+            behaviour = sample['behaviour']
+            if(behaviour not in self.samples_by_class.keys()):
+                self.samples_by_class[behaviour] = 1
+            else:
+                self.samples_by_class[behaviour] += 1
+        return
+
+    def print_samples_by_class(self):
+        print(self.samples_by_class)
 
     def initialise_dataset(self):
         for data in tqdm(self.data):

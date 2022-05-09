@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 from torchvision import transforms
-from dataset import PanAfDataset
+from dataset.datasets import PanAfDataset
 
 
 class TestDense:

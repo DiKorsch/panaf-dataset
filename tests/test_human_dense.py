@@ -1,11 +1,5 @@
-import pickle
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
-from torchvision.utils import make_grid
 from torchvision import transforms
-from dataset import SupervisedPanAf
+from dataset.datasets import SupervisedPanAf
 
 
 class TestDenseInstantiation:
@@ -24,7 +18,7 @@ class TestDenseInstantiation:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            type='rd',
+            type="rd",
             transform=self.transform,
         )
 
@@ -34,7 +28,7 @@ class TestDenseInstantiation:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            type='r',
+            type="r",
             transform=self.transform,
         )
 

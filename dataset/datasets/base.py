@@ -58,6 +58,7 @@ class PanAfDataset(Dataset):
         type: str = "r",
         transform: Optional[Callable] = None,
     ):
+        # TODO: include behaviour_thresh in init
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
@@ -305,7 +306,9 @@ class PanAfDataset(Dataset):
             )
         if "d" in self.type:
             dense_annotation = self.get_dense_annotation(name)
-            sample["dense_sample"] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
+            sample["dense_sample"] = self.build_dense_sample(
+                dense_annotation, name, ape_id, frame_idx
+            )
         # TODO: add flow
         return sample
 

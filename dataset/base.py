@@ -5,7 +5,6 @@ import pickle
 from glob import glob
 from torch.utils.data import Dataset
 from typing import Callable, Optional
-import torch.nn.functional as F
 
 from torchvision.transforms.functional import resize
 
@@ -262,29 +261,36 @@ class PanAfDataset(Dataset):
 
         return spatial_sample
 
+    def get_segmentation(self, det):
+        return det["labels"][None, :, :]
+
+    def get_uv(self, det):
+        return det["uv"]
+
+    def build_iuv(self, i, uv):
+        iuv = torch.cat(i[None].type(torch.float32), uv * 255.0).type(torch.uint8)
+        return iuv
+
+    def resize_stack_seq(self, sequence, size):
+        sequence = [resize(x, size=size).squeeze(dim=0) for x in sequence]
+        return torch.stack(sequence, dim=0)
+
     def build_dense_sample(self, ann, name, ape_id, frame_idx):
 
-        dense_sample = []
+        dense_sample = list()
+
         assert ann["video"] == name
         for i in range(len(ann["annotations"])):
             if ann["annotations"][i]["frame_id"] == frame_idx:
                 for j in range(0, self.total_seq_len, self.sample_itvl):
                     for det in ann["annotations"][i + j]["detections"]:
                         if det["ape_id"] == ape_id:
-
-                            # Not used
-                            # iuv = torch.cat(
-                            #    (
-                            #        det["labels"][None].type(torch.float32),
-                            #        det["uv"] * 255.0,
-                            #    )
-                            # ).type(torch.uint8)
-                            # iuv = self.transform(iuv.numpy())
-                            # End
-
-                            dense_sample.append(det["uv"])
+                            seg = self.get_segmentation(det)
+                            uv = self.get_uv(det)
+                            iuv = torch.cat((seg, uv), dim=0)[None]
+                            iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)
+                            dense_sample.append(iuv)
                 break
-        dense_sample = [resize(x, size=(244, 244)) for x in dense_sample]
         dense_sample = torch.stack(dense_sample, dim=0)
         # Check frames in sample match sequence length
         assert len(dense_sample) == self.sequence_len
@@ -299,9 +305,7 @@ class PanAfDataset(Dataset):
             )
         if "d" in self.type:
             dense_annotation = self.get_dense_annotation(name)
-            sample["dense_sample"] = self.build_dense_sample(
-                dense_annotation, name, ape_id, frame_idx
-            )
+            sample["dense_sample"] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
         # TODO: add flow
         return sample
 

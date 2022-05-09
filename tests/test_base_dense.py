@@ -93,10 +93,6 @@ class TestDense:
 
     def test_build_dense_sample(self):
 
-        transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Resize((244, 244))]
-        )
-
         dataset = PanAfDataset(
             data_dir=self.data_dir,
             ann_dir=self.ann_dir,
@@ -105,7 +101,7 @@ class TestDense:
             sample_itvl=1,
             stride=5,
             type="rd",
-            transform=transform,
+            transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)

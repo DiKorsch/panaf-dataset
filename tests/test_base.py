@@ -6,7 +6,7 @@ Tests on sample containing 1 gorilla present for
 
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from dataset import PanAfDataset
+from dataset.datasets import PanAfDataset
 
 
 class TestSingleApe:
@@ -32,7 +32,7 @@ class TestSingleApe:
         dataloader = DataLoader(dataset)
         sequence = next(iter(dataloader))
         assert dataset.__len__() == 17
-        assert len(sequence.squeeze(dim=0)) == 5
+        assert len(sequence["spatial_sample"].squeeze(dim=0)) == 5
 
     def test_mid_sequence(self):
         """Test 10-frame sequence."""
@@ -47,7 +47,7 @@ class TestSingleApe:
         dataloader = DataLoader(dataset)
         sequence = next(iter(dataloader))
         assert dataset.__len__() == 8
-        assert len(sequence.squeeze(dim=0)) == 10
+        assert len(sequence["spatial_sample"].squeeze(dim=0)) == 10
 
     def test_mid_with_stride(self):
         """Test 10-frame sequence w/ stride 20."""
@@ -63,7 +63,7 @@ class TestSingleApe:
         dataloader = DataLoader(dataset)
         sequence = next(iter(dataloader))
         assert dataset.__len__() == 4
-        assert len(sequence.squeeze(dim=0)) == 10
+        assert len(sequence["spatial_sample"].squeeze(dim=0)) == 10
 
     def test_mid_with_interval(self):
         """Test 10-frame sequence w/ itvl 2."""
@@ -79,7 +79,7 @@ class TestSingleApe:
         dataloader = DataLoader(dataset)
         sequence = next(iter(dataloader))
         assert dataset.__len__() == 8
-        assert len(sequence.squeeze(dim=0)) == 5
+        assert len(sequence["spatial_sample"].squeeze(dim=0)) == 5
 
     def test_large_seqence(self):
         """Test sequence of 86-frames (i.e. match total frames)."""
@@ -94,7 +94,7 @@ class TestSingleApe:
         dataloader = DataLoader(dataset)
         sequence = next(iter(dataloader))
         assert dataset.__len__() == 1
-        assert len(sequence.squeeze(dim=0)) == 86
+        assert len(sequence["spatial_sample"].squeeze(dim=0)) == 86
 
     def test_above_thresh_seqence(self):
         """Test sequence 87-frames (i.e. greater than total frames)."""

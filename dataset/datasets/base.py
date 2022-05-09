@@ -1,9 +1,12 @@
 import json
 import mmcv
 import torch
+import pickle
 from glob import glob
 from torch.utils.data import Dataset
 from typing import Callable, Optional
+
+from torchvision.transforms.functional import resize
 
 # TODO: Want this to be our base class (consider base for human and machine...)
 # TODO: Optimise fetching of bboxes (numba, cython?)
@@ -48,18 +51,22 @@ class PanAfDataset(Dataset):
         self,
         data_dir: str = ".",
         ann_dir: str = ".",
+        dense_dir: str = ".",
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
+        type: str = "r",
         transform: Optional[Callable] = None,
     ):
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
         self.ann_path = ann_dir
+        self.dense_dir = dense_dir
         self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
-        #
+        self.dense_data = glob(f"{dense_dir}/**/*.pkl", recursive=True)
+
         # assert len(self.data) == len(self.anns), f"{len(self.data)}, {len(self.anns)}"
 
         # Number of frames in sequence
@@ -77,6 +84,8 @@ class PanAfDataset(Dataset):
             self.stride = self.total_seq_len
         else:
             self.stride = stride
+
+        self.type = [c for c in type]
 
         self.transform = transform
 
@@ -107,6 +116,9 @@ class PanAfDataset(Dataset):
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
 
+    def get_dense_ann_name(self, path):
+        return path.split("/")[-1].split(".")[0].split("_")[0]
+
     def verify_ape_ids(self, no_of_apes, ids):
         for i in range(0, no_of_apes + 1):
             if i not in ids:
@@ -130,13 +142,21 @@ class PanAfDataset(Dataset):
 
     def check_ape_exists(self, ann, frame_no, current_ape):
         ape = False
-
         for a in ann["annotations"]:
             if a["frame_id"] == frame_no:
                 for d in a["detections"]:
                     if d["ape_id"] == current_ape:
                         ape = True
         return ape
+
+    def check_dense_exists(self, ann, frame_no, current_ape):
+        dense = False
+        for a in ann["annotations"]:
+            if a["frame_id"] == frame_no:
+                for d in a["detections"]:
+                    if d["ape_id"] == current_ape and "dense" in d.keys():
+                        dense = True
+        return dense
 
     def check_sufficient_apes(self, ann, current_ape, frame_no):
         for look_ahead_frame_no in range(frame_no, frame_no + self.total_seq_len):
@@ -145,9 +165,17 @@ class PanAfDataset(Dataset):
                 return False
         return True
 
-    def load_annotation(self, filename):
-        with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
-            ann = json.load(handle)
+    def load_annotation(self, filename: str = None):
+        if "d" not in self.type:
+            with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
+                ann = json.load(handle)
+        else:
+            try:
+                with open(f"{self.ann_path}/{filename}_dense.pkl", "rb") as handle:
+                    ann = pickle.load(handle)
+            except:
+                with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
+                    ann = pickle.load(handle)
         return ann
 
     def print_samples(self):
@@ -218,9 +246,7 @@ class PanAfDataset(Dataset):
         return bbox
 
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
-
         spatial_sample = []
-
         for i in range(0, self.total_seq_len, self.sample_itvl):
             spatial_img = video[frame_idx + i - 1]
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
@@ -235,6 +261,54 @@ class PanAfDataset(Dataset):
 
         return spatial_sample
 
+    def get_segmentation(self, det):
+        return det["labels"][None, :, :]
+
+    def get_uv(self, det):
+        return det["uv"]
+
+    def build_iuv(self, i, uv):
+        iuv = torch.cat(i[None].type(torch.float32), uv * 255.0).type(torch.uint8)
+        return iuv
+
+    def resize_stack_seq(self, sequence, size):
+        sequence = [resize(x, size=size).squeeze(dim=0) for x in sequence]
+        return torch.stack(sequence, dim=0)
+
+    def build_dense_sample(self, ann, name, ape_id, frame_idx):
+
+        dense_sample = list()
+
+        assert ann["video"] == name
+        for i in range(len(ann["annotations"])):
+            if ann["annotations"][i]["frame_id"] == frame_idx:
+                for j in range(0, self.total_seq_len, self.sample_itvl):
+                    for det in ann["annotations"][i + j]["detections"]:
+                        if det["ape_id"] == ape_id:
+                            seg = self.get_segmentation(det)
+                            uv = self.get_uv(det)
+                            iuv = torch.cat((seg, uv), dim=0)[None]
+                            iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)
+                            dense_sample.append(iuv)
+                break
+        dense_sample = torch.stack(dense_sample, dim=0)
+        # Check frames in sample match sequence length
+        assert len(dense_sample) == self.sequence_len
+        return dense_sample
+
+    def build_sample(self, name, ape_id, frame_idx):
+        sample = dict()
+        if "r" in self.type:
+            video = self.get_video(name)
+            sample["spatial_sample"] = self.build_spatial_sample(
+                video, name, ape_id, frame_idx
+            )
+        if "d" in self.type:
+            dense_annotation = self.get_dense_annotation(name)
+            sample["dense_sample"] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
+        # TODO: add flow
+        return sample
+
     def get_video(self, name):
         video = None
         for video_path in self.data:
@@ -242,11 +316,19 @@ class PanAfDataset(Dataset):
                 video = mmcv.VideoReader(video_path)
         return video
 
+    def get_dense_annotation(self, name):
+        dense_annotation = None
+        for path in self.dense_data:
+            filename = self.get_dense_ann_name(path)
+            if filename == name:
+                dense_annotation = self.load_annotation(name)
+        return dense_annotation
+
     def __getitem__(self, index):
         sample = self.samples[index]
         ape_id = sample["ape_id"]
         frame_idx = sample["start_frame"]
         name = sample["video"]
-        video = self.get_video(name)
-        spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
-        return spatial_sample
+
+        sample = self.build_sample(name, ape_id, frame_idx)
+        return sample

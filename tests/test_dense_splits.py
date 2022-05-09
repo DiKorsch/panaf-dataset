@@ -14,9 +14,7 @@ def test_train_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/train"
-    ann_dir = (
-        "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/train"
-    )
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/train"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
@@ -24,6 +22,7 @@ def test_train_split():
         sequence_len=5,
         sample_itvl=1,
         stride=5,
+        type="rd",
         transform=transform,
         behaviour_threshold=24,
     )
@@ -43,7 +42,7 @@ def test_val_split():
     data_dir = (
         "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/validation"
     )
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/validation"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/validation"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
@@ -51,6 +50,7 @@ def test_val_split():
         sequence_len=5,
         sample_itvl=1,
         stride=5,
+        type="rd",
         transform=transform,
         behaviour_threshold=24,
     )
@@ -58,6 +58,7 @@ def test_val_split():
     assert dataset.count_videos() == 25
     print(f"Validation samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+
 
 def test_test_split():
     """Test 5-frame sequence with 5-frame behaviour thresh."""
@@ -67,9 +68,7 @@ def test_test_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/test"
-    ann_dir = (
-        "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/test"
-    )
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/test"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
@@ -77,6 +76,7 @@ def test_test_split():
         sequence_len=5,
         sample_itvl=1,
         stride=5,
+        type="rd",
         transform=transform,
         behaviour_threshold=24,
     )

@@ -1,5 +1,6 @@
 import mmcv
-from dataset.base import PanAfDataset
+from tqdm import tqdm
+from dataset.datasets import PanAfDataset
 from typing import Callable, Optional
 
 
@@ -44,9 +45,11 @@ class SupervisedPanAf(PanAfDataset):
         self,
         data_dir: str = ".",
         ann_dir: str = ".",
+        dense_dir: str = ".",
         sequence_len: int = 5,
         sample_itvl: int = 1,
         stride: int = None,
+        type: str = "r",
         transform: Optional[Callable] = None,
         behaviour_threshold: int = 72,
         split: str = None,
@@ -67,8 +70,17 @@ class SupervisedPanAf(PanAfDataset):
         }
 
         super().__init__(
-            data_dir, ann_dir, sequence_len, sample_itvl, stride, transform
+            data_dir,
+            ann_dir,
+            dense_dir,
+            sequence_len,
+            sample_itvl,
+            stride,
+            type,
+            transform,
         )
+
+        self.samples_by_class()
 
     def get_behaviour_index(self, behaviour):
         return self.classes[behaviour]
@@ -107,13 +119,34 @@ class SupervisedPanAf(PanAfDataset):
                 self.get_ape_behaviour(ann, current_ape, look_ahead_frame_no)
                 == current_behaviour
             ):
-                valid_frames += 1
+                if "d" not in self.type:
+                    valid_frames += 1
+                else:
+                    dense = self.check_dense_exists(
+                        ann, look_ahead_frame_no, current_ape
+                    )
+                    if dense:
+                        valid_frames += 1
             else:
                 return valid_frames
+
         return valid_frames
 
+    def samples_by_class(self):
+        self.samples_by_class = {}
+        for sample in self.samples:
+            behaviour = sample['behaviour']
+            if(behaviour not in self.samples_by_class.keys()):
+                self.samples_by_class[behaviour] = 1
+            else:
+                self.samples_by_class[behaviour] += 1
+        return
+
+    def print_samples_by_class(self):
+        print(self.samples_by_class)
+
     def initialise_dataset(self):
-        for data in self.data:
+        for data in tqdm(self.data):
 
             name = self.get_videoname(data)
             video = mmcv.VideoReader(data)

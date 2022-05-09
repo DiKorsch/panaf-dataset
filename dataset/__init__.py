@@ -1,2 +1,1 @@
-from .base import PanAfDataset
-from .supervised import SupervisedPanAf
+from dataset import *

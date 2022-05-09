@@ -25,11 +25,12 @@ def test_train_split():
         sample_itvl=1,
         stride=5,
         transform=transform,
-        behaviour_threshold=72,
+        behaviour_threshold=24,
     )
 
     assert dataset.count_videos() == 400
     print(f"Training samples: {dataset.__len__()}")
+    dataset.print_samples_by_class()
 
 
 def test_val_split():
@@ -51,12 +52,12 @@ def test_val_split():
         sample_itvl=1,
         stride=5,
         transform=transform,
-        behaviour_threshold=72,
+        behaviour_threshold=24,
     )
 
     assert dataset.count_videos() == 25
     print(f"Validation samples: {dataset.__len__()}")
-
+    dataset.print_samples_by_class()
 
 def test_test_split():
     """Test 5-frame sequence with 5-frame behaviour thresh."""
@@ -77,8 +78,9 @@ def test_test_split():
         sample_itvl=1,
         stride=5,
         transform=transform,
-        behaviour_threshold=72,
+        behaviour_threshold=24,
     )
 
     assert dataset.count_videos() == 75
     print(f"Test samples: {dataset.__len__()}")
+    dataset.print_samples_by_class()

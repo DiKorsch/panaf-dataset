@@ -1,2 +1,2 @@
 from .base import PanAfDataset
-from .human import SupervisedPanAf
+from .supervised import SupervisedPanAf

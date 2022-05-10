@@ -19,6 +19,7 @@ def test_train_split():
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
@@ -47,6 +48,7 @@ def test_val_split():
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
@@ -73,6 +75,7 @@ def test_test_split():
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,

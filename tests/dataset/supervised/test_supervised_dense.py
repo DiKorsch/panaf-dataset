@@ -15,6 +15,7 @@ class TestDenseInstantiation:
         dense_dataset = SupervisedPanAf(
             data_dir=self.data_dir,
             ann_dir=self.dense_dir,
+            dense_dir=self.dense_dir,
             sequence_len=5,
             sample_itvl=1,
             stride=5,
@@ -25,6 +26,7 @@ class TestDenseInstantiation:
         dataset = SupervisedPanAf(
             data_dir=self.data_dir,
             ann_dir=self.std_dir,
+            dense_dir=self.dense_dir,
             sequence_len=5,
             sample_itvl=1,
             stride=5,

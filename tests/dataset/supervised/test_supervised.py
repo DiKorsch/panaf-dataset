@@ -48,7 +48,7 @@ class TestSingleApe:
 
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
-        assert len(sequence.squeeze(dim=0)) == 5
+        assert len(sequence['spatial_sample'].squeeze(dim=0)) == 5
 
     def test_low_threshold_w_stride10_itvl4(self):
         """Test 5-frame sequence with 5-frame behaviour thresh."""
@@ -66,7 +66,7 @@ class TestSingleApe:
 
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
-        assert len(sequence.squeeze(dim=0)) == 5
+        assert len(sequence['spatial_sample'].squeeze(dim=0)) == 5
 
     def test_mid_threshold(self):
 
@@ -95,7 +95,7 @@ class TestSingleApe:
         assert dataset.__len__() == 8
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
-        assert len(sequence.squeeze(dim=0)) == 10
+        assert len(sequence['spatial_sample'].squeeze(dim=0)) == 10
         assert behaviour == 8
 
     def test_mid_threshold_w_seqlen20(self):
@@ -112,7 +112,7 @@ class TestSingleApe:
         assert dataset.__len__() == 4
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))
-        assert len(sequence.squeeze(dim=0)) == 20
+        assert len(sequence['spatial_sample'].squeeze(dim=0)) == 20
         assert behaviour == 8
 
     def test_mid_threshold_w_stride(self):

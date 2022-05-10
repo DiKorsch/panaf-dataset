@@ -1,8 +1,9 @@
+import os
 from typing import Optional
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
 from dataset.datasets import SupervisedPanAf
-
+from torchvision import transforms
 """
 Trainer args (accelerator, devices, num_nodes, etc…)
 Data args (sequence length, stride, etc...)
@@ -48,39 +49,43 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         # TODO: inc. transforms here
+        self.transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Resize((244, 244))]
+        )
+        print(self.type.strip('"'))
 
         self.train_dataset = SupervisedPanAf(
-            data_dir=f"{self.data_dir}/train",
-            ann_dir=f"{self.ann_dir}/train",
-            dense_dir=f"{self.dense_dir}/train",
+            data_dir=os.path.join(self.data_dir.strip('"'), "train"),
+            ann_dir=os.path.join(self.ann_dir.strip('"'), "train"),
+            dense_dir=os.path.join(self.dense_dir.strip('"'), "train"),
             sequence_len=self.sequence_len,
             sample_itvl=self.sample_itvl,
             stride=self.stride,
-            type=self.type,
+            type=self.type.strip('"'),
             transform=self.transform,
             behaviour_threshold=self.behaviour_threshold,
         )
 
         self.validation_dataset = SupervisedPanAf(
-            data_dir=f"{self.data_dir}/validation",
-            ann_dir=f"{self.ann_dir}/validation",
-            dense_dir=f"{self.dense_dir}/validation",
+            data_dir=os.path.join(self.data_dir.strip('"'), "validation"),
+            ann_dir=os.path.join(self.ann_dir.strip('"'), "validation"),
+            dense_dir=os.path.join(self.dense_dir.strip('"'), "validation"),
             sequence_len=self.sequence_len,
             sample_itvl=self.sample_itvl,
             stride=self.stride,
-            type=self.type,
+            type=self.type.strip('"'),
             transform=self.transform,
             behaviour_threshold=self.behaviour_threshold,
         )
 
         self.test_dataset = SupervisedPanAf(
-            data_dir=f"{self.data_dir}/test",
-            ann_dir=f"{self.ann_dir}/test",
-            dense_dir=f"{self.dense_dir}/test",
+            data_dir=os.path.join(self.data_dir.strip('"'), "test"),
+            ann_dir=os.path.join(self.ann_dir.strip('"'), "test"),
+            dense_dir=os.path.join(self.dense_dir.strip('"'), "test"),
             sequence_len=self.sequence_len,
             sample_itvl=self.sample_itvl,
             stride=self.stride,
-            type=self.type,
+            type=self.type.strip('"'),
             transform=self.transform,
             behaviour_threshold=self.behaviour_threshold,
         )

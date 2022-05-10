@@ -14,11 +14,12 @@ def test_train_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/train"
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/train"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/train"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
@@ -42,11 +43,12 @@ def test_val_split():
     data_dir = (
         "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/validation"
     )
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/validation"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/validation"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
@@ -68,11 +70,12 @@ def test_test_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/test"
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/densepose_annotations/test"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/test"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
+        dense_dir=ann_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,

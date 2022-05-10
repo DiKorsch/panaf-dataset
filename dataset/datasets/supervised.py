@@ -135,8 +135,8 @@ class SupervisedPanAf(PanAfDataset):
     def samples_by_class(self):
         self.samples_by_class = {}
         for sample in self.samples:
-            behaviour = sample['behaviour']
-            if(behaviour not in self.samples_by_class.keys()):
+            behaviour = sample["behaviour"]
+            if behaviour not in self.samples_by_class.keys():
                 self.samples_by_class[behaviour] = 1
             else:
                 self.samples_by_class[behaviour] += 1
@@ -228,8 +228,9 @@ class SupervisedPanAf(PanAfDataset):
         ape_id = sample["ape_id"]
         frame_idx = sample["start_frame"]
         name = sample["video"]
+
         behaviour = sample["behaviour"]
         behaviour_idx = self.get_behaviour_index(behaviour)
-        video = self.get_video(name)
-        spatial_sample = self.build_spatial_sample(video, name, ape_id, frame_idx)
-        return spatial_sample, behaviour_idx
+
+        sample = self.build_sample(name, ape_id, frame_idx)
+        return sample, behaviour_idx

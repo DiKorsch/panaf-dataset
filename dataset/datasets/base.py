@@ -58,6 +58,7 @@ class PanAfDataset(Dataset):
         type: str = "r",
         transform: Optional[Callable] = None,
     ):
+        # TODO: include behaviour_thresh in init
         super(PanAfDataset, self).__init__()
 
         self.data_path = data_dir
@@ -171,10 +172,10 @@ class PanAfDataset(Dataset):
                 ann = json.load(handle)
         else:
             try:
-                with open(f"{self.ann_path}/{filename}_dense.pkl", "rb") as handle:
+                with open(f"{self.dense_dir}/{filename}_dense.pkl", "rb") as handle:
                     ann = pickle.load(handle)
             except:
-                with open(f"{self.ann_path}/{filename}.pkl", "rb") as handle:
+                with open(f"{self.dense_dir}/{filename}.pkl", "rb") as handle:
                     ann = pickle.load(handle)
         return ann
 
@@ -305,7 +306,9 @@ class PanAfDataset(Dataset):
             )
         if "d" in self.type:
             dense_annotation = self.get_dense_annotation(name)
-            sample["dense_sample"] = self.build_dense_sample(dense_annotation, name, ape_id, frame_idx)
+            sample["dense_sample"] = self.build_dense_sample(
+                dense_annotation, name, ape_id, frame_idx
+            )
         # TODO: add flow
         return sample
 

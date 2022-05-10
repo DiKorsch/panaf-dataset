@@ -30,7 +30,7 @@ class TestDense:
         )
 
         with open(
-            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK_dense.pkl", "rb"
         ) as handle:
             ann = pickle.load(handle)
 
@@ -50,7 +50,7 @@ class TestDense:
         )
 
         with open(
-            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK_dense.pkl", "rb"
         ) as handle:
             ann = pickle.load(handle)
 

@@ -171,12 +171,8 @@ class PanAfDataset(Dataset):
             with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
                 ann = json.load(handle)
         else:
-            try:
-                with open(f"{self.dense_dir}/{filename}_dense.pkl", "rb") as handle:
-                    ann = pickle.load(handle)
-            except:
-                with open(f"{self.dense_dir}/{filename}.pkl", "rb") as handle:
-                    ann = pickle.load(handle)
+            with open(f"{self.dense_dir}/{filename}_dense.pkl", "rb") as handle:
+                ann = pickle.load(handle)
         return ann
 
     def print_samples(self):

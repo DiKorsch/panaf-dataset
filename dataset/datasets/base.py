@@ -282,7 +282,10 @@ class PanAfDataset(Dataset):
                 for j in range(0, self.total_seq_len, self.sample_itvl):
                     for det in ann["annotations"][i + j]["detections"]:
                         if det["ape_id"] == ape_id:
-                            seg = self.get_segmentation(det)
+                            try:
+                                seg = self.get_segmentation(det)
+                            except:
+                                raise ValueError(f"{name}, {i + j}, {ape_id}")
                             uv = self.get_uv(det)
                             iuv = torch.cat((seg, uv), dim=0)[None]
                             iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)

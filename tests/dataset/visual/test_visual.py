@@ -1,8 +1,5 @@
 import pickle
-import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
 from torchvision.utils import make_grid
 from torchvision import transforms
 from dataset.datasets import PanAfDataset
@@ -29,7 +26,7 @@ class TestDense:
             transform=self.transform,
         )
         with open(
-            "tests/data/cases/dense/example_one/annotations/0hu96Jv2As.pkl", "rb"
+            "tests/data/cases/dense/example_one/annotations/0hu96Jv2As_dense.pkl", "rb"
         ) as handle:
             ann = pickle.load(handle)
 
@@ -52,7 +49,7 @@ class TestDense:
             transform=self.transform,
         )
         with open(
-            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK.pkl", "rb"
+            "tests/data/cases/dense/example_two/annotations/0YvgQsXboK_dense.pkl", "rb"
         ) as handle:
             ann = pickle.load(handle)
 

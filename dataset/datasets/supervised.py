@@ -50,12 +50,10 @@ class SupervisedPanAf(PanAfDataset):
         sample_itvl: int = 1,
         stride: int = None,
         type: str = "r",
-        transform: Optional[Callable] = None,
-        behaviour_threshold: int = 72,
+        behaviour_threshold: int = None,
         split: str = None,
+        transform: Optional[Callable] = None,
     ):
-        self.behaviour_threshold = behaviour_threshold
-        self.split = split
 
         self.classes = {
             "camera_interaction": 0,
@@ -77,6 +75,8 @@ class SupervisedPanAf(PanAfDataset):
             sample_itvl,
             stride,
             type,
+            behaviour_threshold,
+            split,
             transform,
         )
 
@@ -228,7 +228,7 @@ class SupervisedPanAf(PanAfDataset):
                                     if not last_dense:
                                         correct_activity = False
                                         break
-                            
+
                             if not correct_activity:
                                 break
 

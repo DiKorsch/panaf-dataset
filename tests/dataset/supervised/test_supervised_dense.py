@@ -20,6 +20,7 @@ class TestDenseInstantiation:
             sample_itvl=1,
             stride=5,
             type="rd",
+            behaviour_threshold=24,
             transform=self.transform,
         )
 
@@ -31,6 +32,7 @@ class TestDenseInstantiation:
             sample_itvl=1,
             stride=5,
             type="r",
+            behaviour_threshold=24,
             transform=self.transform,
         )
 

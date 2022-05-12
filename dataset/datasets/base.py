@@ -56,6 +56,8 @@ class PanAfDataset(Dataset):
         sample_itvl: int = 1,
         stride: int = None,
         type: str = "r",
+        behaviour_threshold: int = None,
+        split: str = None,
         transform: Optional[Callable] = None,
     ):
         # TODO: include behaviour_thresh in init
@@ -87,6 +89,10 @@ class PanAfDataset(Dataset):
             self.stride = stride
 
         self.type = [c for c in type]
+
+        self.behaviour_threshold = behaviour_threshold
+        
+        self.split = split
 
         self.transform = transform
 
@@ -251,7 +257,9 @@ class PanAfDataset(Dataset):
             try:
                 spatial_data = self.transform(cropped_img)
             except:
-                raise ValueError(f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx}, Box: {coords}")
+                raise ValueError(
+                    f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx}, Box: {coords}"
+                )
             spatial_sample.append(spatial_data.squeeze_(0))
         spatial_sample = torch.stack(spatial_sample, dim=0)
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)

@@ -39,6 +39,7 @@ class TestSingleApe:
             sequence_len=5,
             sample_itvl=1,
             stride=10,
+            type='r',
             transform=self.transform,
             behaviour_threshold=5,
         )
@@ -58,6 +59,7 @@ class TestSingleApe:
             sequence_len=5,
             sample_itvl=4,
             stride=10,
+            type='r',
             transform=self.transform,
             behaviour_threshold=5,
         )
@@ -88,6 +90,7 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=10,
             sample_itvl=1,
+            type='r',
             transform=self.transform,
             behaviour_threshold=72,
         )
@@ -105,6 +108,7 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=20,
             sample_itvl=1,
+            type='r',
             transform=self.transform,
             behaviour_threshold=72,
         )

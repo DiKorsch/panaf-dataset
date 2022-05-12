@@ -171,12 +171,8 @@ class PanAfDataset(Dataset):
             with open(f"{self.ann_path}/{filename}.json", "rb") as handle:
                 ann = json.load(handle)
         else:
-            try:
-                with open(f"{self.dense_dir}/{filename}_dense.pkl", "rb") as handle:
-                    ann = pickle.load(handle)
-            except:
-                with open(f"{self.dense_dir}/{filename}.pkl", "rb") as handle:
-                    ann = pickle.load(handle)
+            with open(f"{self.dense_dir}/{filename}_dense.pkl", "rb") as handle:
+                ann = pickle.load(handle)
         return ann
 
     def print_samples(self):
@@ -252,7 +248,10 @@ class PanAfDataset(Dataset):
             spatial_img = video[frame_idx + i - 1]
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
             cropped_img = spatial_img[coords[1] : coords[3], coords[0] : coords[2]]
-            spatial_data = self.transform(cropped_img)
+            try:
+                spatial_data = self.transform(cropped_img)
+            except:
+                raise ValueError(f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx}, Box: {coords}")
             spatial_sample.append(spatial_data.squeeze_(0))
         spatial_sample = torch.stack(spatial_sample, dim=0)
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
@@ -286,7 +285,10 @@ class PanAfDataset(Dataset):
                 for j in range(0, self.total_seq_len, self.sample_itvl):
                     for det in ann["annotations"][i + j]["detections"]:
                         if det["ape_id"] == ape_id:
-                            seg = self.get_segmentation(det)
+                            try:
+                                seg = self.get_segmentation(det)
+                            except:
+                                raise ValueError(f"{name}, {i + j}, {ape_id}")
                             uv = self.get_uv(det)
                             iuv = torch.cat((seg, uv), dim=0)[None]
                             iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)

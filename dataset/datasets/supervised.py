@@ -127,6 +127,8 @@ class SupervisedPanAf(PanAfDataset):
                     )
                     if dense:
                         valid_frames += 1
+                    else:
+                        return valid_frames
             else:
                 return valid_frames
 
@@ -172,6 +174,14 @@ class SupervisedPanAf(PanAfDataset):
                         frame_no += 1
                         continue
 
+                    if "d" in self.type:
+                        current_dense = self.check_dense_exists(
+                            ann, frame_no, current_ape
+                        )
+                        if not current_dense:
+                            frame_no += 1
+                            continue
+
                     current_behaviour = self.get_ape_behaviour(
                         ann, current_ape, frame_no
                     )
@@ -198,6 +208,7 @@ class SupervisedPanAf(PanAfDataset):
                                 ape = self.check_ape_exists(
                                     ann, temporal_frame, current_ape
                                 )
+
                                 ape_activity = self.get_ape_behaviour(
                                     ann, temporal_frame, current_ape
                                 )
@@ -208,6 +219,16 @@ class SupervisedPanAf(PanAfDataset):
                                 ):
                                     correct_activity = False
                                     break
+
+                                if "d" in self.type:
+                                    last_dense = self.check_dense_exists(
+                                        ann, temporal_frame, current_ape
+                                    )
+
+                                    if not last_dense:
+                                        correct_activity = False
+                                        break
+                            
                             if not correct_activity:
                                 break
 

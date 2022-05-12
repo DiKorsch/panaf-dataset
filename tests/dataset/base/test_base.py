@@ -26,6 +26,7 @@ class TestSingleApe:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
+            type="r",
             transform=self.transform,
         )
 
@@ -41,6 +42,7 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=10,
             sample_itvl=1,
+            type="r",
             transform=self.transform,
         )
 
@@ -57,6 +59,7 @@ class TestSingleApe:
             sequence_len=10,
             sample_itvl=1,
             stride=20,
+            type="r",
             transform=self.transform,
         )
 
@@ -73,6 +76,7 @@ class TestSingleApe:
             sequence_len=5,
             sample_itvl=2,
             stride=10,
+            type="r",
             transform=self.transform,
         )
 
@@ -88,6 +92,7 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=86,
             sample_itvl=1,
+            type="r",
             transform=self.transform,
         )
 
@@ -103,6 +108,7 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=87,
             sample_itvl=1,
+            type="r",
             transform=self.transform,
         )
         assert dataset.__len__() == 0

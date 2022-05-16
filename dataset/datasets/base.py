@@ -2,6 +2,7 @@ import json
 import mmcv
 import torch
 import pickle
+from PIL import Image
 from glob import glob
 from torch.utils.data import Dataset
 from typing import Callable, Optional
@@ -251,14 +252,14 @@ class PanAfDataset(Dataset):
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
         spatial_sample = []
         for i in range(0, self.total_seq_len, self.sample_itvl):
-            spatial_img = video[frame_idx + i - 1]
+            spatial_img = Image.fromarray(video[frame_idx + i - 1])
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
-            cropped_img = spatial_img[coords[1] : coords[3], coords[0] : coords[2]]
+            cropped_img = spatial_img.crop(coords)
             try:
                 spatial_data = self.transform(cropped_img)
             except:
                 raise ValueError(
-                    f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx}, Box: {coords}"
+                    f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx + i}, Box: {coords}"
                 )
             spatial_sample.append(spatial_data.squeeze_(0))
         spatial_sample = torch.stack(spatial_sample, dim=0)

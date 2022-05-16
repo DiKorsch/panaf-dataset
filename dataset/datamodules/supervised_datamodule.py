@@ -16,9 +16,21 @@ Program arguments (data_path, cluster_email, etc…)
 class SupervisedPanAfDataModule(LightningDataModule):
     def __init__(self, cfg):
 
-        self.data_dir = cfg.get("program", "data_dir")
-        self.ann_dir = cfg.get("program", "ann_dir")
-        self.dense_dir = cfg.get("program", "dense_dir")
+        if cfg.getboolean("remote", "slurm"):
+            user = os.getenv("USER")
+            slurm_job_id = os.getenv("SLURM_JOB_ID")
+            self.path = f"/raid/local_scratch/{user}/{slurm_job_id}"
+            data_dir = f"{self.path}/{cfg.get('program', 'data_dir')}"
+            ann_dir = f"{self.path}/{cfg.get('program', 'ann_dir')}"
+            dense_dir = f"{self.path}/{cfg.get('program', 'dense_dir')}"
+        else:
+            data_dir = cfg.get("program", "data_dir")
+            ann_dir = cfg.get("program", "ann_dir")
+            dense_dir = cfg.get("program", "dense_dir")
+
+        self.data_dir = data_dir
+        self.ann_dir = ann_dir
+        self.dense_dir = dense_dir
         self.sequence_len = cfg.getint("dataset", "sequence_len")
         self.sample_itvl = cfg.getint("dataset", "sample_itvl")
         self.stride = cfg.getint("dataset", "stride")

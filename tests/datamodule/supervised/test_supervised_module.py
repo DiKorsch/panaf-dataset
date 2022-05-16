@@ -18,8 +18,6 @@ class TestConfig:
 
         sample, behaviour = next(iter(data_module.train_dataloader()))
 
-        print(sample["spatial_sample"].shape)
-
         assert len(sample["spatial_sample"].squeeze()) == int(
             self.cfg["dataset"]["sequence_len"]
         )

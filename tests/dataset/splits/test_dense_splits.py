@@ -54,7 +54,7 @@ def test_val_split():
         stride=5,
         type="rd",
         transform=transform,
-        behaviour_threshold=24,
+        behaviour_threshold=5,
     )
 
     assert dataset.count_videos() == 25
@@ -81,7 +81,7 @@ def test_test_split():
         stride=5,
         type="rd",
         transform=transform,
-        behaviour_threshold=24,
+        behaviour_threshold=5,
     )
 
     assert dataset.count_videos() == 75

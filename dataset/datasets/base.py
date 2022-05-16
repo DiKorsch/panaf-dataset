@@ -55,7 +55,7 @@ class PanAfDataset(Dataset):
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
-        type: str = '',
+        type: str = "",
         behaviour_threshold: int = None,
         split: str = None,
         transform: Optional[Callable] = None,
@@ -301,11 +301,13 @@ class PanAfDataset(Dataset):
                             iuv = torch.cat((seg, uv), dim=0)[None]
                             iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)
                             dense_sample.append(iuv)
-                break
-        dense_sample = torch.stack(dense_sample, dim=0)
-        # Check frames in sample match sequence length
-        assert len(dense_sample) == self.sequence_len
-        return dense_sample
+                            if len(dense_sample) == self.sequence_len:
+                                dense_sample = torch.stack(dense_sample, dim=0)
+                                # Check frames in sample match sequence length
+                                assert (
+                                    len(dense_sample) == self.sequence_len
+                                ), f"{len(dense_sample)} != {self.sequence_len}"
+                                return dense_sample
 
     def build_sample(self, name, ape_id, frame_idx):
         sample = dict()

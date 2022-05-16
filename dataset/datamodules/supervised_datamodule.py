@@ -40,7 +40,6 @@ class SupervisedPanAfDataModule(LightningDataModule):
         self.transform = transforms.Compose(
             [transforms.ToTensor(), transforms.Resize((244, 244))]
         )
-        print(self.type.strip('"'))
 
         self.train_dataset = SupervisedPanAf(
             data_dir=os.path.join(self.data_dir, "train"),

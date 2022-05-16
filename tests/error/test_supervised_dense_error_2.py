@@ -25,8 +25,6 @@ class TestDenseInstantiation:
             behaviour_threshold=24,
         )
 
-        print(dense_dataset.samples)
-
         loader = DataLoader(dense_dataset, shuffle=False, batch_size=1)
         for sample, label in loader:
             pass

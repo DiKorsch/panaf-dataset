@@ -23,7 +23,9 @@ class SupervisedPanAfDataModule(LightningDataModule):
         self.sample_itvl = cfg.getint("dataset", "sample_itvl")
         self.stride = cfg.getint("dataset", "stride")
         self.type = cfg.get("dataset", "type")
-        self.behaviour_threshold = cfg.getint("dataset", "behaviour_threshold")
+        self.train_threshold = cfg.getint("dataset", "train_threshold")
+        self.test_threshold = cfg.getint("dataset", "test_threshold")
+
         # self.transform = transform
         self.batch_size = cfg.getint("loader", "batch_size")
         self.num_workers = cfg.getint("loader", "num_workers")
@@ -49,7 +51,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
             stride=self.stride,
             type=self.type,
             transform=self.transform,
-            behaviour_threshold=self.behaviour_threshold,
+            behaviour_threshold=self.train_threshold,
         )
 
         self.validation_dataset = SupervisedPanAf(
@@ -61,7 +63,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
             stride=self.stride,
             type=self.type,
             transform=self.transform,
-            behaviour_threshold=self.behaviour_threshold,
+            behaviour_threshold=self.test_threshold,
         )
 
         self.test_dataset = SupervisedPanAf(
@@ -73,7 +75,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
             stride=self.stride,
             type=self.type,
             transform=self.transform,
-            behaviour_threshold=self.behaviour_threshold,
+            behaviour_threshold=self.test_threshold,
         )
 
     def train_dataloader(self):

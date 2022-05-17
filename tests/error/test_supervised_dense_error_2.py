@@ -1,6 +1,6 @@
 import pickle
 from torchvision import transforms
-from dataset.datasets import SupervisedPanAf
+from panaf.datasets import SupervisedPanAf
 from torch.utils.data import DataLoader
 
 

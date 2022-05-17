@@ -2,7 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
 from torchvision import transforms
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 
 
 class TestDense:

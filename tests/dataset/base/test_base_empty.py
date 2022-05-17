@@ -4,7 +4,7 @@ Tests on sample with no apes detected in any frames.
 """
 
 from torchvision import transforms
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 
 
 class TestEmpty:

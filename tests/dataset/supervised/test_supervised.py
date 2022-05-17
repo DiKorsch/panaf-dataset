@@ -6,7 +6,7 @@ behaviour for 86 consecutive frames (frames 1 - 86).
 
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from dataset.datasets import SupervisedPanAf
+from panaf.datasets import SupervisedPanAf
 
 
 class TestSingleApe:

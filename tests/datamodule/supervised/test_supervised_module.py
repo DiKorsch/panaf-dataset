@@ -2,7 +2,7 @@ import configparser
 from ast import literal_eval
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
-from dataset.datamodules import SupervisedPanAfDataModule
+from panaf.datamodules import SupervisedPanAfDataModule
 
 
 class TestConfig:

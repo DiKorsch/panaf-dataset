@@ -3,7 +3,7 @@ Summary: test instantiation of splits.
 """
 
 from torchvision import transforms
-from dataset.datasets import SupervisedPanAf
+from panaf.datasets import SupervisedPanAf
 
 
 def test_train_split():

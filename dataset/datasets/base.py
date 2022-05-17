@@ -270,6 +270,12 @@ class PanAfDataset(Dataset):
 
         return spatial_sample
 
+    def check_segmentation(self, det):
+        seg = False
+        if "labels" in det.keys():
+            seg = True
+        return seg
+
     def get_segmentation(self, det):
         return det["labels"][None, :, :]
 
@@ -293,11 +299,8 @@ class PanAfDataset(Dataset):
             if ann["annotations"][i]["frame_id"] == frame_idx:
                 for j in range(0, self.total_seq_len, self.sample_itvl):
                     for det in ann["annotations"][i + j]["detections"]:
-                        if det["ape_id"] == ape_id:
-                            try:
-                                seg = self.get_segmentation(det)
-                            except:
-                                raise ValueError(f"{name}, {i + j}, {ape_id}")
+                        if (det["ape_id"] == ape_id) and (self.check_segmentation(det)):
+                            seg = self.get_segmentation(det)
                             uv = self.get_uv(det)
                             iuv = torch.cat((seg, uv), dim=0)[None]
                             iuv = resize(iuv, size=(244, 244)).squeeze(dim=0)

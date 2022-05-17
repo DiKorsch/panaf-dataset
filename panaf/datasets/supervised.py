@@ -1,6 +1,6 @@
 import mmcv
 from tqdm import tqdm
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 from typing import Callable, Optional
 
 

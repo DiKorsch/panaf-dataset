@@ -1,11 +1,7 @@
 import pickle
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
-from torchvision.utils import make_grid
 from torchvision import transforms
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 
 
 class TestDense:

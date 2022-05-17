@@ -7,7 +7,7 @@ until frame 237.
 """
 
 from torchvision import transforms
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 
 
 class TestMultipleApes:

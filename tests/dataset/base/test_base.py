@@ -6,7 +6,7 @@ Tests on sample containing 1 gorilla present for
 
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from dataset.datasets import PanAfDataset
+from panaf.datasets import PanAfDataset
 
 
 class TestSingleApe:

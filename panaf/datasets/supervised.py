@@ -1,4 +1,6 @@
 import mmcv
+import torch
+import numpy as np
 from tqdm import tqdm
 from panaf.datasets import PanAfDataset
 from typing import Callable, Optional
@@ -81,6 +83,15 @@ class SupervisedPanAf(PanAfDataset):
         )
 
         self.samples_by_class()
+        self.compute_class_weights()
+
+    def compute_class_weights(self):
+        _, counts = np.unique(self.targets, return_counts=True)
+        weights = torch.tensor(counts, dtype=torch.float32)
+        weights = weights / weights.sum()
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        self.weights = weights
 
     def get_behaviour_index(self, behaviour):
         return self.classes[behaviour]

@@ -4,6 +4,8 @@ from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
 from panaf.datasets import SupervisedPanAf
 from torchvision import transforms
+from catalyst.data import BalanceClassSampler
+from .sampler import BalancedBatchSampler
 
 """
 Trainer args (accelerator, devices, num_nodes, etc…)
@@ -44,6 +46,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
         self.train_shuffle = cfg.getboolean("loader", "train_shuffle")
         self.test_shuffle = cfg.getboolean("loader", "test_shuffle")
         self.pin_memory = cfg.getboolean("loader", "pin_memory")
+        self.sampler = cfg.get("loader", "sampler")
 
         super().__init__()
 
@@ -89,11 +92,37 @@ class SupervisedPanAfDataModule(LightningDataModule):
             behaviour_threshold=self.test_threshold,
         )
 
+        # Configure based on cfg
+        self.configure_sampler()
+
+    def configure_sampler(self):
+        if self.sampler == "upsampling":
+            self.sampler = BalanceClassSampler(
+                labels=self.train_dataset.targets, mode="upsampling"
+            )
+            self.train_shuffle = False
+
+        elif self.sampler == "downsampling":
+            self.sampler = BalanceClassSampler(
+                labels=self.train_dataset.targets, mode="upsampling"
+            )
+            self.train_shuffle = False
+
+        elif self.sampler == "balanced":
+            self.sampler = BalancedBatchSampler(
+                self.train_dataset, self.train_dataset.targets
+            )
+            self.train_shuffle = False
+        else:
+            self.sampler = None
+
     def train_dataloader(self):
+
         train_loader = DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             shuffle=self.train_shuffle,
+            sampler=self.sampler,
             num_workers=self.num_workers,
             pin_memory=self.pin_memory,
         )

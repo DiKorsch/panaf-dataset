@@ -3,9 +3,9 @@ from typing import Optional
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
 from panaf.datasets import SupervisedPanAf
+from panaf.samplers import BalancedBatchSampler
 from torchvision import transforms
 from catalyst.data import BalanceClassSampler
-from .sampler import BalancedBatchSampler
 
 """
 Trainer args (accelerator, devices, num_nodes, etc…)

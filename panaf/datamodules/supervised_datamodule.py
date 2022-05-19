@@ -6,7 +6,7 @@ from panaf.datasets import SupervisedPanAf
 from panaf.samplers import BalancedBatchSampler
 from torchvision import transforms
 from catalyst.data import BalanceClassSampler
-
+from catalyst.data import DistributedSamplerWrapper
 """
 Trainer args (accelerator, devices, num_nodes, etc…)
 Data args (sequence length, stride, etc...)
@@ -19,6 +19,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
     def __init__(self, cfg):
 
         if cfg.getboolean("remote", "slurm"):
+            self.remote = True
             user = os.getenv("USER")
             slurm_job_id = os.getenv("SLURM_JOB_ID")
             self.path = f"/raid/local_scratch/{user}/{slurm_job_id}"
@@ -26,6 +27,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
             ann_dir = f"{self.path}/{cfg.get('program', 'ann_dir')}"
             dense_dir = f"{self.path}/{cfg.get('program', 'dense_dir')}"
         else:
+            self.remote = False
             data_dir = cfg.get("program", "data_dir")
             ann_dir = cfg.get("program", "ann_dir")
             dense_dir = cfg.get("program", "dense_dir")
@@ -115,6 +117,9 @@ class SupervisedPanAfDataModule(LightningDataModule):
             self.train_shuffle = False
         else:
             self.sampler = None
+
+        if(self.remote):
+            self.sampler = DistributedSamplerWrapper(self.sampler)
 
     def train_dataloader(self):
 

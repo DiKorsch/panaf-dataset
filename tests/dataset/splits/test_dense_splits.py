@@ -28,7 +28,6 @@ def test_train_split():
         behaviour_threshold=24,
     )
 
-    assert dataset.count_videos() == 400
     print(f"Training samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
 
@@ -57,7 +56,6 @@ def test_val_split():
         behaviour_threshold=5,
     )
 
-    assert dataset.count_videos() == 25
     print(f"Validation samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
 
@@ -84,6 +82,5 @@ def test_test_split():
         behaviour_threshold=5,
     )
 
-    assert dataset.count_videos() == 75
     print(f"Test samples: {dataset.__len__()}")
     dataset.print_samples_by_class()

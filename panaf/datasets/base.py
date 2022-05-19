@@ -97,29 +97,11 @@ class PanAfDataset(Dataset):
 
         self.transform = transform
 
-        self.samples = []
+        self.samples = {}
+        self.labels = 0
         self.initialise_dataset()
 
         self.samples_by_video = {}
-        self.initialise_video_dict()
-        self.initialise_samples_by_video()
-
-        self.apes_per_video = {}
-
-    def initialise_video_dict(self):
-        for videopath in self.data:
-            videoname = self.get_videoname(videopath)
-            self.samples_by_video[videoname] = []
-
-    def initialise_samples_by_video(self):
-        for sample in self.samples:
-            videoname = sample["video"]
-            # Check video dict already has entry as a key
-            assert videoname in self.samples_by_video.keys()
-            self.samples_by_video[videoname].append(sample)
-
-    def print_samples_by_video(self, video):
-        print(self.samples_by_video[video])
 
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
@@ -186,7 +168,10 @@ class PanAfDataset(Dataset):
         print(self.samples)
 
     def __len__(self):
-        return len(self.samples)
+        samples = 0
+        for video in self.samples.keys():
+            samples += len(self.samples[video])
+        return samples
 
     def initialise_dataset(self):
         for data in self.data:
@@ -226,7 +211,13 @@ class PanAfDataset(Dataset):
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:
-                        self.samples.append(
+
+                        if name not in self.samples.keys():
+                            self.samples[name] = []
+
+                        self.labels += 1
+
+                        self.samples[name].append(
                             {
                                 "video": name,
                                 "ape_id": current_ape,
@@ -235,6 +226,20 @@ class PanAfDataset(Dataset):
                         )
                     frame_no += self.stride
         return
+
+    # Get the ith sample from the dataset
+    def find_sample(self, index):
+        current_index = 0
+
+        for key in self.samples.keys():
+            for i, value in enumerate(self.samples[key]):
+                if current_index == index:
+                    return (
+                        self.samples[key][i]["video"],
+                        self.samples[key][i]["ape_id"],
+                        self.samples[key][i]["start_frame"],
+                    )
+                current_index += 1
 
     def get_ape_coords(self, video, ape_id, frame_idx):
         bbox = None
@@ -344,10 +349,6 @@ class PanAfDataset(Dataset):
         return dense_annotation
 
     def __getitem__(self, index):
-        sample = self.samples[index]
-        ape_id = sample["ape_id"]
-        frame_idx = sample["start_frame"]
-        name = sample["video"]
-
+        name, ape_id, frame_idx = self.find_sample(index)
         sample = self.build_sample(name, ape_id, frame_idx)
         return sample

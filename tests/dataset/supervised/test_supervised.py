@@ -64,7 +64,7 @@ class TestSingleApe:
             behaviour_threshold=5,
         )
 
-        assert dataset.__len__() == 8
+        assert dataset.__len__() == 7
 
         loader = DataLoader(dataset)
         sequence, behaviour = next(iter(loader))

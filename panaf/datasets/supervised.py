@@ -213,7 +213,7 @@ class SupervisedPanAf(PanAfDataset):
                     for valid_frame_no in range(
                         frame_no, last_valid_frame, self.stride
                     ):
-                        if (valid_frame_no + self.stride) >= last_valid_frame:
+                        if (valid_frame_no + max(self.total_seq_len, self.stride) >= last_valid_frame):
                             correct_activity = False
 
                             for temporal_frame in range(

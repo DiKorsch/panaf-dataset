@@ -7,9 +7,7 @@ from panaf.datasets import PanAfDataset
 
 class TestDense:
 
-    transform = transforms.Compose(
-        [transforms.Resize((244, 244))]
-    )
+    transform = transforms.Compose([transforms.Resize((244, 244))])
 
     data_dir = "tests/data/single/videos"
     ann_dir = "tests/data/single/annotations"
@@ -62,7 +60,6 @@ class TestDense:
 
         assert len(dense_sample) == 8
 
-
     def test_sample_itvl(self):
         """Test 5-frame sequence."""
         dataset = PanAfDataset(
@@ -80,10 +77,10 @@ class TestDense:
 
         dense_sample = dataset.build_dense_sample(ann, "0YvgQsXboK", 0, 1)
         fig = plt.figure(figsize=(8, 6))
+        dense_sample = list(reversed(dense_sample))
         grid = make_grid(dense_sample).permute(1, 2, 0)
         plt.imshow(grid)
         plt.show()
-
 
         dataset = PanAfDataset(
             data_dir=self.data_dir,
@@ -100,6 +97,8 @@ class TestDense:
 
         dense_sample = dataset.build_dense_sample(ann, "0YvgQsXboK", 0, 1)
         fig = plt.figure(figsize=(8, 6))
+        dense_sample = list(reversed(dense_sample))
         grid = make_grid(dense_sample).permute(1, 2, 0)
+        print(grid.shape)
         plt.imshow(grid)
         plt.show()

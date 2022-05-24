@@ -53,6 +53,7 @@ class PanAfDataset(Dataset):
         data_dir: str = None,
         ann_dir: str = None,
         dense_dir: str = None,
+        flow_dir: str = None,
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
@@ -67,6 +68,7 @@ class PanAfDataset(Dataset):
         self.data_path = data_dir
         self.ann_path = ann_dir
         self.dense_dir = dense_dir
+        self.flow_dir = flow_dir
         self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
         self.dense_data = glob(f"{dense_dir}/**/*.pkl", recursive=True)
@@ -254,6 +256,28 @@ class PanAfDataset(Dataset):
                         bbox = d["bbox"]
         return bbox
 
+    def build_temporal_sample(self, name, ape_id, frame_idx):
+        temporal_sample = []
+        for i in range(0, self.total_seq_len, self.sample_itvl):
+            h_flow = Image.open(
+                f"{self.flow_dir}/horizontal_flow/{name}/{name}_frame_{frame_idx + i}.jpg"
+            )
+            v_flow = Image.open(
+                f"{self.flow_dir}/vertical_flow/{name}/{name}_frame_{frame_idx + i}.jpg"
+            )
+            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
+            h_flow_cropped = self.transform(h_flow.crop(coords))
+            v_flow_cropped = self.transform(v_flow.crop(coords))
+            hv_flow = torch.stack(
+                (h_flow_cropped.squeeze_(0), v_flow_cropped.squeeze_(0)), dim=0
+            )
+            temporal_sample.append(hv_flow)
+        temporal_sample = torch.stack(temporal_sample, dim=0)
+        assert (
+            len(temporal_sample) == self.sequence_len
+        ), f"video: {name}, ape_id: {ape_id}, frame_idx: {frame_idx}"
+        return temporal_sample
+
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
         spatial_sample = []
         for i in range(0, self.total_seq_len, self.sample_itvl):
@@ -271,7 +295,9 @@ class PanAfDataset(Dataset):
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
 
         # Check frames in sample match sequence length
-        assert len(spatial_sample) == self.sequence_len
+        assert (
+            len(spatial_sample) == self.sequence_len
+        ), f"video: {name}, ape_id: {ape_id}, frame_idx: {frame_idx}"
 
         return spatial_sample
 
@@ -294,6 +320,13 @@ class PanAfDataset(Dataset):
     def resize_stack_seq(self, sequence, size):
         sequence = [resize(x, size=size).squeeze(dim=0) for x in sequence]
         return torch.stack(sequence, dim=0)
+
+    def get_frame(self, ann, frame_idx):
+        frame = None
+        for i in range(len(ann["annotations"])):
+            if ann["annotations"][i]["frame_id"] == frame_idx:
+                frame = ann["annotations"][i]["frame_id"]
+        return frame
 
     def build_dense_sample(self, ann, name, ape_id, frame_idx):
 
@@ -330,7 +363,8 @@ class PanAfDataset(Dataset):
             sample["dense_sample"] = self.build_dense_sample(
                 dense_annotation, name, ape_id, frame_idx
             )
-        # TODO: add flow
+        if "f" in self.type:
+            sample["flow_sample"] = self.build_temporal_sample(name, ape_id, frame_idx)
         return sample
 
     def get_video(self, name):

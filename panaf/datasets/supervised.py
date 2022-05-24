@@ -48,6 +48,7 @@ class SupervisedPanAf(PanAfDataset):
         data_dir: str = None,
         ann_dir: str = None,
         dense_dir: str = None,
+        flow_dir: str = None,
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
@@ -73,6 +74,7 @@ class SupervisedPanAf(PanAfDataset):
             data_dir,
             ann_dir,
             dense_dir,
+            flow_dir,
             sequence_len,
             sample_itvl,
             stride,
@@ -213,7 +215,10 @@ class SupervisedPanAf(PanAfDataset):
                     for valid_frame_no in range(
                         frame_no, last_valid_frame, self.stride
                     ):
-                        if (valid_frame_no + max(self.total_seq_len, self.stride) >= last_valid_frame):
+                        if (
+                            valid_frame_no + max(self.total_seq_len, self.stride)
+                            >= last_valid_frame
+                        ):
                             correct_activity = False
 
                             for temporal_frame in range(

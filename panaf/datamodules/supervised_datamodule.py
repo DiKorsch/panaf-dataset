@@ -66,7 +66,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
             data_dir=os.path.join(self.data_dir, "train"),
             ann_dir=os.path.join(self.ann_dir, "train"),
             dense_dir=os.path.join(self.dense_dir, "train"),
-            flow_dir = self.flow_dir,
+            flow_dir=self.flow_dir,
             sequence_len=self.sequence_len,
             sample_itvl=self.sample_itvl,
             stride=self.stride,
@@ -125,7 +125,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
         else:
             self.sampler = None
 
-        if self.remote:
+        if self.remote and self.sampler is not None:
             self.sampler = DistributedSamplerWrapper(self.sampler)
 
     def train_dataloader(self):

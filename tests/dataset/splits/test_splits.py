@@ -14,9 +14,7 @@ def test_train_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/train"
-    ann_dir = (
-        "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/train"
-    )
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/train"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
@@ -28,7 +26,6 @@ def test_train_split():
         behaviour_threshold=24,
     )
 
-    assert dataset.count_videos() == 400
     print(f"Training samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
 
@@ -55,9 +52,10 @@ def test_val_split():
         behaviour_threshold=5,
     )
 
-    assert dataset.count_videos() == 25
+    assert len(dataset.samples.keys()) == 25
     print(f"Validation samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+
 
 def test_test_split():
     """Test 5-frame sequence with 5-frame behaviour thresh."""
@@ -67,9 +65,7 @@ def test_test_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/test"
-    ann_dir = (
-        "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/test"
-    )
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/test"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
@@ -81,6 +77,6 @@ def test_test_split():
         behaviour_threshold=5,
     )
 
-    assert dataset.count_videos() == 75
+    assert len(dataset.samples.keys()) == 75
     print(f"Test samples: {dataset.__len__()}")
     dataset.print_samples_by_class()

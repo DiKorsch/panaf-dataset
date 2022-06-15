@@ -14,16 +14,18 @@ def test_train_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/train"
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/train"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/train"
+    flow_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/frames"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
         dense_dir=ann_dir,
+        flow_dir=flow_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
-        type="rd",
+        type="rf",
         transform=transform,
         behaviour_threshold=24,
     )
@@ -42,16 +44,18 @@ def test_val_split():
     data_dir = (
         "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/validation"
     )
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/validation"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/validation"
+    flow_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/frames"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
         dense_dir=ann_dir,
+        flow_dir=flow_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
-        type="rd",
+        type="rf",
         transform=transform,
         behaviour_threshold=5,
     )
@@ -68,16 +72,18 @@ def test_test_split():
     )
 
     data_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/data/test"
-    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/dense/test"
+    ann_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/restructure/annotations/standard/test"
+    flow_dir = "/home/dl18206/Desktop/phd/data/panaf/obfuscated/frames"
 
     dataset = SupervisedPanAf(
         data_dir=data_dir,
         ann_dir=ann_dir,
         dense_dir=ann_dir,
+        flow_dir=flow_dir,
         sequence_len=5,
         sample_itvl=1,
         stride=5,
-        type="rd",
+        type="rf",
         transform=transform,
         behaviour_threshold=5,
     )

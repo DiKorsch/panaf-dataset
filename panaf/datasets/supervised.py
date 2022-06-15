@@ -1,4 +1,6 @@
 import mmcv
+import torch
+import numpy as np
 from tqdm import tqdm
 from panaf.datasets import PanAfDataset
 from typing import Callable, Optional
@@ -46,15 +48,16 @@ class SupervisedPanAf(PanAfDataset):
         data_dir: str = None,
         ann_dir: str = None,
         dense_dir: str = None,
+        flow_dir: str = None,
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
-        type: str = '',
+        type: str = "",
         behaviour_threshold: int = None,
         split: str = None,
         transform: Optional[Callable] = None,
     ):
-
+        self.targets = []
         self.classes = {
             "camera_interaction": 0,
             "climbing_down": 1,
@@ -71,6 +74,7 @@ class SupervisedPanAf(PanAfDataset):
             data_dir,
             ann_dir,
             dense_dir,
+            flow_dir,
             sequence_len,
             sample_itvl,
             stride,
@@ -81,6 +85,15 @@ class SupervisedPanAf(PanAfDataset):
         )
 
         self.samples_by_class()
+        self.compute_class_weights()
+
+    def compute_class_weights(self):
+        _, counts = np.unique(self.targets, return_counts=True)
+        weights = torch.tensor(counts, dtype=torch.float32)
+        weights = weights / weights.sum()
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        self.weights = weights
 
     def get_behaviour_index(self, behaviour):
         return self.classes[behaviour]
@@ -135,13 +148,16 @@ class SupervisedPanAf(PanAfDataset):
         return valid_frames
 
     def samples_by_class(self):
+
         self.samples_by_class = {}
-        for sample in self.samples:
-            behaviour = sample["behaviour"]
-            if behaviour not in self.samples_by_class.keys():
-                self.samples_by_class[behaviour] = 1
-            else:
-                self.samples_by_class[behaviour] += 1
+
+        for video in self.samples.keys():
+            for sample in self.samples[video]:
+                behaviour = sample["behaviour"]
+                if behaviour not in self.samples_by_class.keys():
+                    self.samples_by_class[behaviour] = 1
+                else:
+                    self.samples_by_class[behaviour] += 1
         return
 
     def print_samples_by_class(self):
@@ -199,7 +215,10 @@ class SupervisedPanAf(PanAfDataset):
                     for valid_frame_no in range(
                         frame_no, last_valid_frame, self.stride
                     ):
-                        if (valid_frame_no + self.stride) >= last_valid_frame:
+                        if (
+                            valid_frame_no + max(self.total_seq_len, self.stride)
+                            >= last_valid_frame
+                        ):
                             correct_activity = False
 
                             for temporal_frame in range(
@@ -233,7 +252,16 @@ class SupervisedPanAf(PanAfDataset):
                                 break
 
                         if (no_of_frames - valid_frame_no) >= self.total_seq_len:
-                            self.samples.append(
+
+                            if name not in self.samples.keys():
+                                self.samples[name] = []
+
+                            self.labels += 1
+                            self.targets.append(
+                                self.get_behaviour_index(current_behaviour)
+                            )
+
+                            self.samples[name].append(
                                 {
                                     "video": name,
                                     "ape_id": current_ape,
@@ -244,14 +272,23 @@ class SupervisedPanAf(PanAfDataset):
 
                     frame_no = last_valid_frame
 
+    # Get the ith sample from the dataset
+    def find_sample(self, index):
+        current_index = 0
+
+        for key in self.samples.keys():
+            for i, value in enumerate(self.samples[key]):
+                if current_index == index:
+                    return (
+                        self.samples[key][i]["video"],
+                        self.samples[key][i]["ape_id"],
+                        self.samples[key][i]["start_frame"],
+                        self.samples[key][i]["behaviour"],
+                    )
+                current_index += 1
+
     def __getitem__(self, index):
-        sample = self.samples[index]
-        ape_id = sample["ape_id"]
-        frame_idx = sample["start_frame"]
-        name = sample["video"]
-
-        behaviour = sample["behaviour"]
+        name, ape_id, frame_idx, behaviour = self.find_sample(index)
         behaviour_idx = self.get_behaviour_index(behaviour)
-
         sample = self.build_sample(name, ape_id, frame_idx)
         return sample, behaviour_idx

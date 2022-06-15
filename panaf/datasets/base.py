@@ -53,6 +53,7 @@ class PanAfDataset(Dataset):
         data_dir: str = None,
         ann_dir: str = None,
         dense_dir: str = None,
+        flow_dir: str = None,
         sequence_len: int = None,
         sample_itvl: int = None,
         stride: int = None,
@@ -67,6 +68,7 @@ class PanAfDataset(Dataset):
         self.data_path = data_dir
         self.ann_path = ann_dir
         self.dense_dir = dense_dir
+        self.flow_dir = flow_dir
         self.data = glob(f"{data_dir}/**/*.mp4", recursive=True)
         self.anns = glob(f"{ann_dir}/**/*.json", recursive=True)
         self.dense_data = glob(f"{dense_dir}/**/*.pkl", recursive=True)
@@ -97,29 +99,11 @@ class PanAfDataset(Dataset):
 
         self.transform = transform
 
-        self.samples = []
+        self.samples = {}
+        self.labels = 0
         self.initialise_dataset()
 
         self.samples_by_video = {}
-        self.initialise_video_dict()
-        self.initialise_samples_by_video()
-
-        self.apes_per_video = {}
-
-    def initialise_video_dict(self):
-        for videopath in self.data:
-            videoname = self.get_videoname(videopath)
-            self.samples_by_video[videoname] = []
-
-    def initialise_samples_by_video(self):
-        for sample in self.samples:
-            videoname = sample["video"]
-            # Check video dict already has entry as a key
-            assert videoname in self.samples_by_video.keys()
-            self.samples_by_video[videoname].append(sample)
-
-    def print_samples_by_video(self, video):
-        print(self.samples_by_video[video])
 
     def get_videoname(self, path):
         return path.split("/")[-1].split(".")[0]
@@ -186,7 +170,10 @@ class PanAfDataset(Dataset):
         print(self.samples)
 
     def __len__(self):
-        return len(self.samples)
+        samples = 0
+        for video in self.samples.keys():
+            samples += len(self.samples[video])
+        return samples
 
     def initialise_dataset(self):
         for data in self.data:
@@ -226,7 +213,13 @@ class PanAfDataset(Dataset):
                         continue
 
                     if (len(video) - frame_no) >= self.sequence_len:
-                        self.samples.append(
+
+                        if name not in self.samples.keys():
+                            self.samples[name] = []
+
+                        self.labels += 1
+
+                        self.samples[name].append(
                             {
                                 "video": name,
                                 "ape_id": current_ape,
@@ -235,6 +228,20 @@ class PanAfDataset(Dataset):
                         )
                     frame_no += self.stride
         return
+
+    # Get the ith sample from the dataset
+    def find_sample(self, index):
+        current_index = 0
+
+        for key in self.samples.keys():
+            for i, value in enumerate(self.samples[key]):
+                if current_index == index:
+                    return (
+                        self.samples[key][i]["video"],
+                        self.samples[key][i]["ape_id"],
+                        self.samples[key][i]["start_frame"],
+                    )
+                current_index += 1
 
     def get_ape_coords(self, video, ape_id, frame_idx):
         bbox = None
@@ -248,6 +255,28 @@ class PanAfDataset(Dataset):
                     if d["ape_id"] == ape_id:
                         bbox = d["bbox"]
         return bbox
+
+    def build_temporal_sample(self, name, ape_id, frame_idx):
+        temporal_sample = []
+        for i in range(0, self.total_seq_len, self.sample_itvl):
+            h_flow = Image.open(
+                f"{self.flow_dir}/horizontal_flow/{name}/{name}_frame_{frame_idx + i}.jpg"
+            )
+            v_flow = Image.open(
+                f"{self.flow_dir}/vertical_flow/{name}/{name}_frame_{frame_idx + i}.jpg"
+            )
+            coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
+            h_flow_cropped = self.transform(h_flow.crop(coords))
+            v_flow_cropped = self.transform(v_flow.crop(coords))
+            hv_flow = torch.stack(
+                (h_flow_cropped.squeeze_(0), v_flow_cropped.squeeze_(0)), dim=0
+            )
+            temporal_sample.append(hv_flow)
+        temporal_sample = torch.stack(temporal_sample, dim=0)
+        assert (
+            len(temporal_sample) == self.sequence_len
+        ), f"video: {name}, ape_id: {ape_id}, frame_idx: {frame_idx}"
+        return temporal_sample
 
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
         spatial_sample = []
@@ -266,7 +295,9 @@ class PanAfDataset(Dataset):
         spatial_sample = spatial_sample.permute(0, 1, 2, 3)
 
         # Check frames in sample match sequence length
-        assert len(spatial_sample) == self.sequence_len
+        assert (
+            len(spatial_sample) == self.sequence_len
+        ), f"video: {name}, ape_id: {ape_id}, frame_idx: {frame_idx}"
 
         return spatial_sample
 
@@ -289,6 +320,13 @@ class PanAfDataset(Dataset):
     def resize_stack_seq(self, sequence, size):
         sequence = [resize(x, size=size).squeeze(dim=0) for x in sequence]
         return torch.stack(sequence, dim=0)
+
+    def get_frame(self, ann, frame_idx):
+        frame = None
+        for i in range(len(ann["annotations"])):
+            if ann["annotations"][i]["frame_id"] == frame_idx:
+                frame = ann["annotations"][i]["frame_id"]
+        return frame
 
     def build_dense_sample(self, ann, name, ape_id, frame_idx):
 
@@ -325,7 +363,8 @@ class PanAfDataset(Dataset):
             sample["dense_sample"] = self.build_dense_sample(
                 dense_annotation, name, ape_id, frame_idx
             )
-        # TODO: add flow
+        if "f" in self.type:
+            sample["flow_sample"] = self.build_temporal_sample(name, ape_id, frame_idx)
         return sample
 
     def get_video(self, name):
@@ -344,10 +383,6 @@ class PanAfDataset(Dataset):
         return dense_annotation
 
     def __getitem__(self, index):
-        sample = self.samples[index]
-        ape_id = sample["ape_id"]
-        frame_idx = sample["start_frame"]
-        name = sample["video"]
-
+        name, ape_id, frame_idx = self.find_sample(index)
         sample = self.build_sample(name, ape_id, frame_idx)
         return sample

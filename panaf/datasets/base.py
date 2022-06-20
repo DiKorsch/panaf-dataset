@@ -283,7 +283,8 @@ class PanAfDataset(Dataset):
     def build_spatial_sample(self, video, name, ape_id, frame_idx):
         spatial_sample = []
         for i in range(0, self.total_seq_len, self.sample_itvl):
-            spatial_img = Image.fromarray(video[frame_idx + i - 1])
+            frame = video[frame_idx + i - 1].numpy()
+            spatial_img = Image.fromarray(frame)
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
             cropped_img = spatial_img.crop(coords)
             try:

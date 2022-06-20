@@ -380,7 +380,7 @@ class PanAfDataset(Dataset):
                     print(f"Path error: {video_path}")
         if video is not None:
             video = video[0]
-        return video[0]
+        return video
 
     def get_dense_annotation(self, name):
         dense_annotation = None

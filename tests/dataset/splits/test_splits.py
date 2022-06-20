@@ -28,6 +28,7 @@ def test_train_split():
 
     print(f"Training samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+    print(dataset.compute_logit_adjustment())
 
 
 def test_val_split():

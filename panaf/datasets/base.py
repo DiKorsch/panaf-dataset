@@ -1,7 +1,9 @@
+import os
 import json
 import mmcv
 import torch
 import pickle
+import torchvision
 from PIL import Image
 from glob import glob
 from torch.utils.data import Dataset
@@ -371,8 +373,11 @@ class PanAfDataset(Dataset):
         video = None
         for video_path in self.data:
             if self.get_videoname(video_path) == name:
-                video = mmcv.VideoReader(video_path)
-        return video
+                if(os.path.isfile(video_path)):
+                    video = torchvision.io.read_video(filename=video_path, pts_unit='sec')
+                else:
+                    print(f"Path error: {video_path}")
+        return video[0]
 
     def get_dense_annotation(self, name):
         dense_annotation = None

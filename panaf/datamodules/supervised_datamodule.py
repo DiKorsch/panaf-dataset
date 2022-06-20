@@ -19,7 +19,7 @@ Program arguments (data_path, cluster_email, etc…)
 class SupervisedPanAfDataModule(LightningDataModule):
     def __init__(self, cfg):
 
-        if cfg.getboolean("remote", "slurm"):
+        if cfg.get("remote", "slurm") == "ssd":
             self.remote = True
             user = os.getenv("USER")
             slurm_job_id = os.getenv("SLURM_JOB_ID")
@@ -28,7 +28,15 @@ class SupervisedPanAfDataModule(LightningDataModule):
             ann_dir = f"{self.path}/{cfg.get('program', 'ann_dir')}"
             dense_dir = f"{self.path}/{cfg.get('program', 'dense_dir')}"
             flow_dir = f"{self.path}/{cfg.get('program', 'flow_dir')}"
-        else:
+
+        elif cfg.get("remote", "slurm") == "hdd":
+            self.remote = True
+            data_dir = cfg.get("program", "data_dir")
+            ann_dir = cfg.get("program", "ann_dir")
+            dense_dir = cfg.get("program", "dense_dir")
+            flow_dir = cfg.get("program", "flow_dir")
+
+        elif cfg.get("remote", "slurm") == "local":
             self.remote = False
             data_dir = cfg.get("program", "data_dir")
             ann_dir = cfg.get("program", "ann_dir")
@@ -113,7 +121,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
         elif self.sampler == "downsampling":
             self.sampler = BalanceClassSampler(
-                labels=self.train_dataset.targets, mode="upsampling"
+                labels=self.train_dataset.targets, mode="downsampling"
             )
             self.train_shuffle = False
 

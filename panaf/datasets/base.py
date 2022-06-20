@@ -378,6 +378,8 @@ class PanAfDataset(Dataset):
                     video = torchvision.io.read_video(filename=video_path, pts_unit='sec')
                 else:
                     print(f"Path error: {video_path}")
+        if video is not None:
+            video = video[0]
         return video[0]
 
     def get_dense_annotation(self, name):

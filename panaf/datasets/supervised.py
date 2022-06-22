@@ -87,6 +87,20 @@ class SupervisedPanAf(PanAfDataset):
         self.samples_by_class()
         self.compute_class_weights()
 
+    def compute_logit_adjustment(self):
+        label_freq = {}
+        for label in self.targets:
+            if label not in label_freq.keys():
+                label_freq[label] = 1
+            else:
+                label_freq[label] += 1
+        label_freq = dict(sorted(label_freq.items()))
+        label_freq_array = np.array(list(label_freq.values()))
+        label_freq_array = label_freq_array / label_freq_array.sum()
+        adjustments = np.log(label_freq_array**1.0 + 1e-12)
+        adjustments = torch.from_numpy(adjustments)
+        return adjustments
+
     def compute_class_weights(self):
         _, counts = np.unique(self.targets, return_counts=True)
         weights = torch.tensor(counts, dtype=torch.float32)

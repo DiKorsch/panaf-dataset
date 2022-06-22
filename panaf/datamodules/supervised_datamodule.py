@@ -19,7 +19,7 @@ Program arguments (data_path, cluster_email, etc…)
 class SupervisedPanAfDataModule(LightningDataModule):
     def __init__(self, cfg):
 
-        if cfg.getboolean("remote", "slurm"):
+        if cfg.get("remote", "slurm") == "ssd":
             self.remote = True
             user = os.getenv("USER")
             slurm_job_id = os.getenv("SLURM_JOB_ID")
@@ -28,7 +28,15 @@ class SupervisedPanAfDataModule(LightningDataModule):
             ann_dir = f"{self.path}/{cfg.get('program', 'ann_dir')}"
             dense_dir = f"{self.path}/{cfg.get('program', 'dense_dir')}"
             flow_dir = f"{self.path}/{cfg.get('program', 'flow_dir')}"
-        else:
+
+        elif cfg.get("remote", "slurm") == "hdd":
+            self.remote = True
+            data_dir = cfg.get("program", "data_dir")
+            ann_dir = cfg.get("program", "ann_dir")
+            dense_dir = cfg.get("program", "dense_dir")
+            flow_dir = cfg.get("program", "flow_dir")
+
+        elif cfg.get("remote", "slurm") == "local":
             self.remote = False
             data_dir = cfg.get("program", "data_dir")
             ann_dir = cfg.get("program", "ann_dir")
@@ -62,44 +70,48 @@ class SupervisedPanAfDataModule(LightningDataModule):
             [transforms.ToTensor(), transforms.Resize((244, 244))]
         )
 
-        self.train_dataset = SupervisedPanAf(
-            data_dir=os.path.join(self.data_dir, "train"),
-            ann_dir=os.path.join(self.ann_dir, "train"),
-            dense_dir=os.path.join(self.dense_dir, "train"),
-            flow_dir=self.flow_dir,
-            sequence_len=self.sequence_len,
-            sample_itvl=self.sample_itvl,
-            stride=self.stride,
-            type=self.type,
-            transform=self.transform,
-            behaviour_threshold=self.train_threshold,
-        )
+        if stage == "fit" or stage is None:
 
-        self.validation_dataset = SupervisedPanAf(
-            data_dir=os.path.join(self.data_dir, "validation"),
-            ann_dir=os.path.join(self.ann_dir, "validation"),
-            dense_dir=os.path.join(self.dense_dir, "validation"),
-            flow_dir=self.flow_dir,
-            sequence_len=self.sequence_len,
-            sample_itvl=self.sample_itvl,
-            stride=self.stride,
-            type=self.type,
-            transform=self.transform,
-            behaviour_threshold=self.test_threshold,
-        )
+            self.train_dataset = SupervisedPanAf(
+                data_dir=os.path.join(self.data_dir, "train"),
+                ann_dir=os.path.join(self.ann_dir, "train"),
+                dense_dir=os.path.join(self.dense_dir, "train"),
+                flow_dir=self.flow_dir,
+                sequence_len=self.sequence_len,
+                sample_itvl=self.sample_itvl,
+                stride=self.stride,
+                type=self.type,
+                transform=self.transform,
+                behaviour_threshold=self.train_threshold,
+            )
 
-        self.test_dataset = SupervisedPanAf(
-            data_dir=os.path.join(self.data_dir, "test"),
-            ann_dir=os.path.join(self.ann_dir, "test"),
-            dense_dir=os.path.join(self.dense_dir, "test"),
-            flow_dir=self.flow_dir,
-            sequence_len=self.sequence_len,
-            sample_itvl=self.sample_itvl,
-            stride=self.stride,
-            type=self.type,
-            transform=self.transform,
-            behaviour_threshold=self.test_threshold,
-        )
+            self.validation_dataset = SupervisedPanAf(
+                data_dir=os.path.join(self.data_dir, "validation"),
+                ann_dir=os.path.join(self.ann_dir, "validation"),
+                dense_dir=os.path.join(self.dense_dir, "validation"),
+                flow_dir=self.flow_dir,
+                sequence_len=self.sequence_len,
+                sample_itvl=self.sample_itvl,
+                stride=self.stride,
+                type=self.type,
+                transform=self.transform,
+                behaviour_threshold=self.test_threshold,
+            )
+
+        if stage == "test" or stage is None:
+
+            self.test_dataset = SupervisedPanAf(
+                data_dir=os.path.join(self.data_dir, "test"),
+                ann_dir=os.path.join(self.ann_dir, "test"),
+                dense_dir=os.path.join(self.dense_dir, "test"),
+                flow_dir=self.flow_dir,
+                sequence_len=self.sequence_len,
+                sample_itvl=self.sample_itvl,
+                stride=self.stride,
+                type=self.type,
+                transform=self.transform,
+                behaviour_threshold=self.test_threshold,
+            )
 
         # Configure based on cfg
         self.configure_sampler()
@@ -113,7 +125,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
         elif self.sampler == "downsampling":
             self.sampler = BalanceClassSampler(
-                labels=self.train_dataset.targets, mode="upsampling"
+                labels=self.train_dataset.targets, mode="downsampling"
             )
             self.train_shuffle = False
 
@@ -127,6 +139,9 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
         if self.remote and self.sampler is not None:
             self.sampler = DistributedSamplerWrapper(self.sampler)
+
+    def get_logit_adjustments(self):
+        return self.train_dataset.compute_logit_adjustment()
 
     def train_dataloader(self):
 

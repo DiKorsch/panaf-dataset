@@ -96,7 +96,7 @@ class SupervisedPanAf(PanAfDataset):
         if self.which_classes is None:
             self.which_classes = "all"
 
-        print(f"=> Loading only {self.which_classes}: {self.classes.keys()}")
+        print(f"=> Loading {self.which_classes} classes: {self.classes.keys()}")
 
     def reindex_classes(self):
         class_dict = {}

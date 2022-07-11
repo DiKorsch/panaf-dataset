@@ -24,11 +24,12 @@ def test_train_split():
         stride=5,
         transform=transform,
         behaviour_threshold=24,
-        which_classes='minority'
+        which_classes="minority",
     )
 
     print(f"Training samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+    print(f"Classes: {dataset.classes}")
 
 
 def test_val_split():
@@ -51,11 +52,12 @@ def test_val_split():
         stride=5,
         transform=transform,
         behaviour_threshold=5,
-        which_classes='minority'
+        which_classes="minority",
     )
 
     print(f"Validation samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+    print(f"Classes: {dataset.classes}")
 
 
 def test_test_split():
@@ -76,8 +78,9 @@ def test_test_split():
         stride=5,
         transform=transform,
         behaviour_threshold=5,
-        which_classes='minority'
+        which_classes="minority",
     )
 
     print(f"Test samples: {dataset.__len__()}")
     dataset.print_samples_by_class()
+    print(f"Classes: {dataset.classes}")

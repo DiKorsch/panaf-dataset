@@ -63,6 +63,7 @@ class PanAfDataset(Dataset):
         behaviour_threshold: int = None,
         split: str = None,
         transform: Optional[Callable] = None,
+        which_classes: Optional[str] = None,
     ):
         # TODO: include behaviour_thresh in init
         super(PanAfDataset, self).__init__()
@@ -98,8 +99,8 @@ class PanAfDataset(Dataset):
         self.behaviour_threshold = behaviour_threshold
 
         self.split = split
-
         self.transform = transform
+        self.which_classes = which_classes
 
         self.samples = {}
         self.labels = 0
@@ -374,8 +375,10 @@ class PanAfDataset(Dataset):
         video = None
         for video_path in self.data:
             if self.get_videoname(video_path) == name:
-                if(os.path.isfile(video_path)):
-                    video = torchvision.io.read_video(filename=video_path, pts_unit='sec')
+                if os.path.isfile(video_path):
+                    video = torchvision.io.read_video(
+                        filename=video_path, pts_unit="sec"
+                    )
                 else:
                     print(f"Path error: {video_path}")
         if video is not None:

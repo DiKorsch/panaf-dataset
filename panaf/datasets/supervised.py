@@ -93,6 +93,11 @@ class SupervisedPanAf(PanAfDataset):
         self.samples_by_class()
         self.compute_class_weights()
 
+        if self.which_classes is None:
+            self.which_classes = "all"
+
+        print(f"=> Loading only {self.which_classes}: {self.classes.keys()}")
+
     def reindex_classes(self):
         class_dict = {}
 

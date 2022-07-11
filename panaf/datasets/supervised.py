@@ -89,8 +89,24 @@ class SupervisedPanAf(PanAfDataset):
         )
 
         self.filter_samples()
+        self.reindex_classes()
         self.samples_by_class()
         self.compute_class_weights()
+
+    def reindex_classes(self):
+        class_dict = {}
+
+        for video in self.samples.keys():
+            for sample in self.samples[video]:
+                if sample["behaviour"] not in class_dict.keys():
+                    class_dict[sample["behaviour"]] = None
+
+        class_dict = dict(sorted(class_dict.items()))
+
+        for i, (k, v) in enumerate(class_dict.items()):
+            class_dict[k] = i
+
+        self.classes = class_dict
 
     def filter_samples(self):
 

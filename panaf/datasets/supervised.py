@@ -88,18 +88,23 @@ class SupervisedPanAf(PanAfDataset):
             which_classes,
         )
 
-        self.filter_samples()
-        self.reindex_classes()
-        self.samples_by_class()
-        self.compute_class_weights()
-
         if self.which_classes is None:
             self.which_classes = "all"
+        
+        if self.which_classes != "all":
+            self.filter_samples()
+            self.reindex_classes()
+
+        self.samples_by_class()
+        self.compute_class_weights()
 
         print(f"=> Loading {self.which_classes} classes: {self.classes.keys()}")
     
     def reindex_classes(self):
-
+        """
+        Re-index classes to include only majority or minority classes.
+        Should only be called when which_classes is not 'all'.
+        """
         class_dict = {}
 
         if self.which_classes == 'majority':

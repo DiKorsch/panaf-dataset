@@ -97,21 +97,22 @@ class SupervisedPanAf(PanAfDataset):
             self.which_classes = "all"
 
         print(f"=> Loading {self.which_classes} classes: {self.classes.keys()}")
-
+    
     def reindex_classes(self):
+
         class_dict = {}
 
-        for video in self.samples.keys():
-            for sample in self.samples[video]:
-                if sample["behaviour"] not in class_dict.keys():
-                    class_dict[sample["behaviour"]] = None
+        if self.which_classes == 'majority':
+            behaviours = self.majority_classes
+        elif self.which_classes == 'minority':
+            behaviours = [x for x in self.classes if x not in self.majority_classes]
 
-        class_dict = dict(sorted(class_dict.items()))
-
-        for i, (k, v) in enumerate(class_dict.items()):
-            class_dict[k] = i
+        behaviours = sorted(behaviours, key=str.lower)
+        for i, b in enumerate(behaviours):
+            class_dict[b] = i
 
         self.classes = class_dict
+
 
     def filter_samples(self):
 

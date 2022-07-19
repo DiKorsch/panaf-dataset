@@ -7,6 +7,7 @@ from panaf.samplers import BalancedBatchSampler
 from torchvision import transforms
 from catalyst.data import BalanceClassSampler
 from catalyst.data import DistributedSamplerWrapper
+from configparser import NoOptionError
 
 """
 Trainer args (accelerator, devices, num_nodes, etc…)
@@ -62,6 +63,11 @@ class SupervisedPanAfDataModule(LightningDataModule):
         self.pin_memory = cfg.getboolean("loader", "pin_memory")
         self.sampler = cfg.get("loader", "sampler")
 
+        try:
+            self.which_classes = cfg.get("dataset", "classes")
+        except NoOptionError:
+            self.which_classes = None
+
         super().__init__()
 
     def setup(self, stage: Optional[str] = None):
@@ -83,6 +89,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 type=self.type,
                 transform=self.transform,
                 behaviour_threshold=self.train_threshold,
+                which_classes=self.which_classes,
             )
 
             self.validation_dataset = SupervisedPanAf(
@@ -96,6 +103,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 type=self.type,
                 transform=self.transform,
                 behaviour_threshold=self.test_threshold,
+                which_classes=self.which_classes,
             )
 
         if stage == "test" or stage is None:

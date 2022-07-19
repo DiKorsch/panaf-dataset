@@ -56,6 +56,7 @@ class SupervisedPanAf(PanAfDataset):
         behaviour_threshold: int = None,
         split: str = None,
         transform: Optional[Callable] = None,
+        which_classes: Optional[str] = None,
     ):
         self.targets = []
         self.classes = {
@@ -70,6 +71,8 @@ class SupervisedPanAf(PanAfDataset):
             "walking": 8,
         }
 
+        self.majority_classes = ["sitting", "standing", "walking"]
+
         super().__init__(
             data_dir,
             ann_dir,
@@ -82,10 +85,59 @@ class SupervisedPanAf(PanAfDataset):
             behaviour_threshold,
             split,
             transform,
+            which_classes,
         )
+
+        if self.which_classes is None:
+            self.which_classes = "all"
+        
+        if self.which_classes != "all":
+            self.filter_samples()
+            self.reindex_classes()
 
         self.samples_by_class()
         self.compute_class_weights()
+
+        print(f"=> Loading {self.which_classes} classes: {self.classes.keys()}")
+    
+    def reindex_classes(self):
+        """
+        Re-index classes to include only majority or minority classes.
+        Should only be called when which_classes is not 'all'.
+        """
+        class_dict = {}
+
+        if self.which_classes == 'majority':
+            behaviours = self.majority_classes
+        elif self.which_classes == 'minority':
+            behaviours = [x for x in self.classes if x not in self.majority_classes]
+
+        behaviours = sorted(behaviours, key=str.lower)
+        for i, b in enumerate(behaviours):
+            class_dict[b] = i
+
+        self.classes = class_dict
+
+
+    def filter_samples(self):
+
+        if self.which_classes == "majority":
+            for video in self.samples.keys():
+                self.samples[video] = [
+                    x
+                    for x in self.samples[video]
+                    if x["behaviour"] in self.majority_classes
+                ]
+
+        elif self.which_classes == "minority":
+            for video in self.samples.keys():
+                self.samples[video] = [
+                    x
+                    for x in self.samples[video]
+                    if x["behaviour"] not in self.majority_classes
+                ]
+        else:
+            pass
 
     def compute_logit_adjustment(self):
         label_freq = {}

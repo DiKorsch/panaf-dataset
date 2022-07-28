@@ -72,8 +72,22 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         # TODO: inc. transforms here
-        self.transform = transforms.Compose(
-            [transforms.ToTensor(), transforms.Resize((244, 244))]
+        self.spatial_transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Resize((244, 244)),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225],
+                ),
+            ]
+        )
+        self.temporal_transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Resize((244, 244)),
+                transforms.Normalize(mean=[0.5], std=[0.5]),
+            ]
         )
 
         if stage == "fit" or stage is None:
@@ -87,7 +101,8 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                transform=self.transform,
+                spatial_transform=self.spatial_transform,
+                temporal_transform=self.temporal_transform,
                 behaviour_threshold=self.train_threshold,
                 which_classes=self.which_classes,
             )
@@ -101,7 +116,8 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                transform=self.transform,
+                spatial_transform=self.spatial_transform,
+                temporal_transform=self.temporal_transform,
                 behaviour_threshold=self.test_threshold,
                 which_classes=self.which_classes,
             )
@@ -117,7 +133,8 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                transform=self.transform,
+                spatial_transform=self.spatial_transform,
+                temporal_transform=self.temporal_transform,
                 behaviour_threshold=self.test_threshold,
             )
 

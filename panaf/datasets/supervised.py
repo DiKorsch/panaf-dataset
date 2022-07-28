@@ -56,7 +56,8 @@ class SupervisedPanAf(PanAfDataset):
         type: str = "",
         behaviour_threshold: int = None,
         split: str = None,
-        transform: Optional[Callable] = None,
+        spatial_transform: Optional[Callable] = None,
+        temporal_transform: Optional[Callable] = None,
         which_classes: Optional[str] = None,
     ):
         self.targets = []
@@ -85,7 +86,8 @@ class SupervisedPanAf(PanAfDataset):
             type,
             behaviour_threshold,
             split,
-            transform,
+            spatial_transform,
+            temporal_transform,
             which_classes,
         )
 

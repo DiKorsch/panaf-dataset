@@ -62,7 +62,8 @@ class PanAfDataset(Dataset):
         type: str = "",
         behaviour_threshold: int = None,
         split: str = None,
-        transform: Optional[Callable] = None,
+        spatial_transform: Optional[Callable] = None,
+        temporal_transform: Optional[Callable] = None,
         which_classes: Optional[str] = None,
     ):
         # TODO: include behaviour_thresh in init
@@ -99,7 +100,8 @@ class PanAfDataset(Dataset):
         self.behaviour_threshold = behaviour_threshold
 
         self.split = split
-        self.transform = transform
+        self.spatial_transform = spatial_transform
+        self.temporal_transform = temporal_transform
         self.which_classes = which_classes
 
         self.samples = {}
@@ -269,8 +271,8 @@ class PanAfDataset(Dataset):
                 f"{self.flow_dir}/vertical_flow/{name}/{name}_frame_{frame_idx + i}.jpg"
             )
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
-            h_flow_cropped = self.transform(h_flow.crop(coords))
-            v_flow_cropped = self.transform(v_flow.crop(coords))
+            h_flow_cropped = self.temporal_transform(h_flow.crop(coords))
+            v_flow_cropped = self.temporal_transform(v_flow.crop(coords))
             hv_flow = torch.stack(
                 (h_flow_cropped.squeeze_(0), v_flow_cropped.squeeze_(0)), dim=0
             )
@@ -289,7 +291,7 @@ class PanAfDataset(Dataset):
             coords = list(map(int, self.get_ape_coords(name, ape_id, frame_idx + i)))
             cropped_img = spatial_img.crop(coords)
             try:
-                spatial_data = self.transform(cropped_img)
+                spatial_data = self.spatial_transform(cropped_img)
             except:
                 raise ValueError(
                     f"Name: {name}, Ape: {ape_id}, Frame: {frame_idx + i}, Box: {coords}"

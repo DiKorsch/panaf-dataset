@@ -25,7 +25,8 @@ class TestMultipleApes:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
             behaviour_threshold=72,
         )
         assert dataset.__len__() == 51
@@ -37,7 +38,8 @@ class TestMultipleApes:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
             behaviour_threshold=25,
         )
 

@@ -22,7 +22,8 @@ class TestDense:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         with open(
@@ -42,7 +43,8 @@ class TestDense:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         with open(
@@ -63,7 +65,8 @@ class TestDense:
             sequence_len=5,
             sample_itvl=1,
             stride=5,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         ann = dataset.get_dense_annotation("0YvgQsXboK")
@@ -80,7 +83,8 @@ class TestDense:
             sample_itvl=1,
             stride=5,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         dataloader = DataLoader(dataset)
@@ -97,7 +101,8 @@ class TestDense:
             sample_itvl=1,
             stride=5,
             type="rd",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         dataloader = DataLoader(dataset)

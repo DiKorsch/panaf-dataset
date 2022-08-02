@@ -1,5 +1,6 @@
 import mmcv
 import torch
+import random
 import numpy as np
 from tqdm import tqdm
 from panaf.datasets import PanAfDataset
@@ -55,7 +56,8 @@ class SupervisedPanAf(PanAfDataset):
         type: str = "",
         behaviour_threshold: int = None,
         split: str = None,
-        transform: Optional[Callable] = None,
+        spatial_transform: Optional[Callable] = None,
+        temporal_transform: Optional[Callable] = None,
         which_classes: Optional[str] = None,
     ):
         self.targets = []
@@ -84,13 +86,14 @@ class SupervisedPanAf(PanAfDataset):
             type,
             behaviour_threshold,
             split,
-            transform,
+            spatial_transform,
+            temporal_transform,
             which_classes,
         )
 
         if self.which_classes is None:
             self.which_classes = "all"
-        
+
         if self.which_classes != "all":
             self.filter_samples()
             self.reindex_classes()
@@ -99,7 +102,7 @@ class SupervisedPanAf(PanAfDataset):
         self.compute_class_weights()
 
         print(f"=> Loading {self.which_classes} classes: {self.classes.keys()}")
-    
+
     def reindex_classes(self):
         """
         Re-index classes to include only majority or minority classes.
@@ -107,9 +110,9 @@ class SupervisedPanAf(PanAfDataset):
         """
         class_dict = {}
 
-        if self.which_classes == 'majority':
+        if self.which_classes == "majority":
             behaviours = self.majority_classes
-        elif self.which_classes == 'minority':
+        elif self.which_classes == "minority":
             behaviours = [x for x in self.classes if x not in self.majority_classes]
 
         behaviours = sorted(behaviours, key=str.lower)
@@ -117,7 +120,6 @@ class SupervisedPanAf(PanAfDataset):
             class_dict[b] = i
 
         self.classes = class_dict
-
 
     def filter_samples(self):
 
@@ -358,3 +360,80 @@ class SupervisedPanAf(PanAfDataset):
         behaviour_idx = self.get_behaviour_index(behaviour)
         sample = self.build_sample(name, ape_id, frame_idx)
         return sample, behaviour_idx
+
+
+class SupervisedPanAfPairs(SupervisedPanAf):
+    def __init__(
+        self,
+        data_dir: str = None,
+        ann_dir: str = None,
+        dense_dir: str = None,
+        flow_dir: str = None,
+        sequence_len: int = None,
+        sample_itvl: int = None,
+        stride: int = None,
+        type: str = "",
+        behaviour_threshold: int = None,
+        split: str = None,
+        spatial_transform: Optional[Callable] = None,
+        temporal_transform: Optional[Callable] = None,
+        which_classes: Optional[str] = None,
+    ):
+
+        super().__init__(
+            data_dir,
+            ann_dir,
+            dense_dir,
+            flow_dir,
+            sequence_len,
+            sample_itvl,
+            stride,
+            type,
+            behaviour_threshold,
+            split,
+            spatial_transform,
+            temporal_transform,
+            which_classes,
+        )
+
+        self.convert_samples_by_class()
+
+    def convert_samples_by_class(self):
+
+        self.samples_by_class = {}
+
+        for video in self.samples.keys():
+            for sample in self.samples[video]:
+                behaviour = sample["behaviour"]
+                if behaviour not in self.samples_by_class.keys():
+                    self.samples_by_class[behaviour] = []
+                    self.samples_by_class[behaviour].append(sample)
+                else:
+                    self.samples_by_class[behaviour].append(sample)
+        return
+
+    def get_positive_sample(self, anchor_behaviour):
+        for behaviour in self.samples_by_class.keys():
+            if behaviour == anchor_behaviour:
+                sample = random.choice(self.samples_by_class[behaviour])
+                return (
+                    sample["video"],
+                    sample["ape_id"],
+                    sample["start_frame"],
+                    sample["behaviour"],
+                )
+
+    def __getitem__(self, index):
+        # TODO: inherit from supervised class - no need for extra file
+        name, ape_id, frame_idx, behaviour = self.find_sample(index)
+        behaviour_idx = self.get_behaviour_index(behaviour)
+        anchor_sample = self.build_sample(name, ape_id, frame_idx)
+
+        pos_name, pos_ape_id, pos_frame_idx, pos_behaviour = self.get_positive_sample(
+            behaviour
+        )
+        positive_sample = self.build_sample(pos_name, pos_ape_id, pos_frame_idx)
+
+        assert behaviour == pos_behaviour
+
+        return anchor_sample, positive_sample, behaviour_idx

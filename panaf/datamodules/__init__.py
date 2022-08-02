@@ -1,1 +1,2 @@
 from .supervised_datamodule import SupervisedPanAfDataModule
+from .supervised_datamodule_pairs import SupervisedPanAfPairsDataModule

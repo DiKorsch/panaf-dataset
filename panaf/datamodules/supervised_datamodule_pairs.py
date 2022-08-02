@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
-from panaf.datasets import SupervisedPanAf
+from panaf.datasets import SupervisedPanAfPairs
 from panaf.samplers import BalancedBatchSampler
 from torchvision import transforms
 from catalyst.data import BalanceClassSampler
@@ -17,7 +17,7 @@ Program arguments (data_path, cluster_email, etc…)
 """
 
 
-class SupervisedPanAfDataModule(LightningDataModule):
+class SupervisedPanAfPairsDataModule(LightningDataModule):
     def __init__(self, cfg):
 
         if cfg.get("remote", "slurm") == "ssd":
@@ -72,27 +72,13 @@ class SupervisedPanAfDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         # TODO: inc. transforms here
-        self.spatial_transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Resize((244, 244)),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-            ]
-        )
-        self.temporal_transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Resize((244, 244)),
-                transforms.Normalize(mean=[0.5], std=[0.5]),
-            ]
+        self.transform = transforms.Compose(
+            [transforms.ToTensor(), transforms.Resize((244, 244))]
         )
 
         if stage == "fit" or stage is None:
 
-            self.train_dataset = SupervisedPanAf(
+            self.train_dataset = SupervisedPanAfPairs(
                 data_dir=os.path.join(self.data_dir, "train"),
                 ann_dir=os.path.join(self.ann_dir, "train"),
                 dense_dir=os.path.join(self.dense_dir, "train"),
@@ -101,13 +87,12 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                spatial_transform=self.spatial_transform,
-                temporal_transform=self.temporal_transform,
+                transform=self.transform,
                 behaviour_threshold=self.train_threshold,
                 which_classes=self.which_classes,
             )
 
-            self.validation_dataset = SupervisedPanAf(
+            self.validation_dataset = SupervisedPanAfPairs(
                 data_dir=os.path.join(self.data_dir, "validation"),
                 ann_dir=os.path.join(self.ann_dir, "validation"),
                 dense_dir=os.path.join(self.dense_dir, "validation"),
@@ -116,15 +101,14 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                spatial_transform=self.spatial_transform,
-                temporal_transform=self.temporal_transform,
+                transform=self.transform,
                 behaviour_threshold=self.test_threshold,
                 which_classes=self.which_classes,
             )
 
         if stage == "test" or stage is None:
 
-            self.test_dataset = SupervisedPanAf(
+            self.test_dataset = SupervisedPanAfPairs(
                 data_dir=os.path.join(self.data_dir, "test"),
                 ann_dir=os.path.join(self.ann_dir, "test"),
                 dense_dir=os.path.join(self.dense_dir, "test"),
@@ -133,8 +117,7 @@ class SupervisedPanAfDataModule(LightningDataModule):
                 sample_itvl=self.sample_itvl,
                 stride=self.stride,
                 type=self.type,
-                spatial_transform=self.spatial_transform,
-                temporal_transform=self.temporal_transform,
+                transform=self.transform,
                 behaviour_threshold=self.test_threshold,
             )
 

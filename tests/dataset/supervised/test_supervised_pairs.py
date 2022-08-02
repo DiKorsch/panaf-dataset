@@ -25,7 +25,8 @@ class TestSingleApe:
             sequence_len=5,
             sample_itvl=1,
             type='r',
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
             behaviour_threshold=5,
         )
 

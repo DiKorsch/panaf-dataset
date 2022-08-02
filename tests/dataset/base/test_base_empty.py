@@ -22,7 +22,8 @@ class TestEmpty:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         # Test annotation with no apes
@@ -37,7 +38,8 @@ class TestEmpty:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         # Test annotation with no apes

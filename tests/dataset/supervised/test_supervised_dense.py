@@ -21,7 +21,8 @@ class TestDenseInstantiation:
             stride=5,
             type="rd",
             behaviour_threshold=24,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         dataset = SupervisedPanAf(
@@ -33,7 +34,8 @@ class TestDenseInstantiation:
             stride=5,
             type="r",
             behaviour_threshold=24,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform
         )
 
         assert dataset.__len__() != dense_dataset.__len__()

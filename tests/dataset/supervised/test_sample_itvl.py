@@ -27,7 +27,8 @@ class TestSampleItvl:
             sample_itvl=3,
             stride=5,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
             behaviour_threshold=24,
         )
         print(dataset.samples)

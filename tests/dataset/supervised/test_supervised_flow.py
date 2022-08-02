@@ -31,7 +31,8 @@ class TestSupervisedFlow:
             sample_itvl=3,
             stride=5,
             type="rf",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
             behaviour_threshold=24,
         )
         loader = DataLoader(dataset)

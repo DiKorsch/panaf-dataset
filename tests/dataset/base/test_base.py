@@ -27,7 +27,8 @@ class TestSingleApe:
             sample_itvl=1,
             stride=5,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)
@@ -43,7 +44,8 @@ class TestSingleApe:
             sequence_len=10,
             sample_itvl=1,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)
@@ -60,7 +62,8 @@ class TestSingleApe:
             sample_itvl=1,
             stride=20,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)
@@ -77,7 +80,8 @@ class TestSingleApe:
             sample_itvl=2,
             stride=10,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)
@@ -93,7 +97,8 @@ class TestSingleApe:
             sequence_len=86,
             sample_itvl=1,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         dataloader = DataLoader(dataset)
@@ -109,7 +114,8 @@ class TestSingleApe:
             sequence_len=87,
             sample_itvl=1,
             type="r",
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
         assert dataset.__len__() == 0
 
@@ -120,7 +126,8 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         # True example
@@ -141,7 +148,8 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         # Test annotation with 1 ape
@@ -156,7 +164,8 @@ class TestSingleApe:
             ann_dir=self.ann_dir,
             sequence_len=5,
             sample_itvl=1,
-            transform=self.transform,
+            spatial_transform=self.transform,
+            temporal_transform=self.transform,
         )
 
         # Test annotation with 1 ape

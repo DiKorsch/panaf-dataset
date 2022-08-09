@@ -46,8 +46,10 @@ class SupervisedMothsDataModule(LightningDataModule):
         self._images = np.loadtxt(root / "images.txt",
             dtype=[("id", np.int32), ("fname", "U255")])
 
-        self._labels = np.loadtxt(root / "labels.txt",
+        _labels = np.loadtxt(root / "labels.txt",
             dtype=np.int32)
+
+        cls_idxs, self._labels = np.unique(_labels, return_inverse=True)
 
         self._splits = np.loadtxt(root / "tr_ID.txt",
             dtype=np.int32)

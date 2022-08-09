@@ -30,4 +30,5 @@ class MothsDataset(Dataset):
         if self.transform is not None:
             im = self.transform(im)
 
-        return im, lab
+        sample = dict(spatial_sample=np.expand_dims(im, axis=0))
+        return sample, lab

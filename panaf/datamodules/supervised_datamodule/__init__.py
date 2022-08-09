@@ -1,0 +1,2 @@
+from panaf.datamodules.supervised_datamodule.apes import SupervisedPanAfDataModule
+from panaf.datamodules.supervised_datamodule.moths import SupervisedMothsDataModule

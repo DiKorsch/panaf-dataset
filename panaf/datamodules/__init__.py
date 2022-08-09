@@ -1,2 +1,3 @@
+from .supervised_datamodule import SupervisedMothsDataModule
 from .supervised_datamodule import SupervisedPanAfDataModule
 from .supervised_datamodule_pairs import SupervisedPanAfPairsDataModule
